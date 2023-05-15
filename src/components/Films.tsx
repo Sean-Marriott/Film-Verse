@@ -1,20 +1,27 @@
 import axios from "axios";
-import React from "react";
+import React, {useState} from "react";
 import Film from "./Film"
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
-import {Avatar, CardActionArea, CardHeader} from '@mui/material';
+import {Avatar, CardActionArea, CardHeader, Pagination} from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 const Films = () => {
     const [films, setFilms] = React.useState < Array < Film >> ([])
     const [errorFlag, setErrorFlag] = React.useState(false)
     const [errorMessage, setErrorMessage] = React.useState("")
+    const [page, setPage] = useState(1);
+    const filmsPerPage = 10;
+    const pageCount = Math.ceil(films.length / filmsPerPage)
 
     React.useEffect(() => {
         getFilms()
     }, [])
+
+    const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+        setPage(value);
+    }
 
     const getFilms = () => {
         axios.get('http://localhost:4941/api/v1/films')
@@ -34,7 +41,7 @@ const Films = () => {
     }
 
     const list_of_films = () => {
-        return films.map((item: Film) =>
+        return films.slice((page - 1) * filmsPerPage, page * filmsPerPage).map((item: Film) =>
             <Grid>
                 <Card sx={{ maxWidth: 345 }}>
                     <CardHeader
@@ -100,12 +107,17 @@ const Films = () => {
         )
     } else {
         return (
-            <Grid container display="flex" justifyContent="center" alignItems="center">
-                <Grid>
+            <Grid container rowSpacing={2}>
+                <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
                     <h1>Films</h1>
                 </Grid>
-                <Grid container spacing={6} display="flex" justifyContent="center" alignItems="center" disableEqualOverflow>
-                    {list_of_films()}
+                <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
+                    <Grid container spacing={6} display="flex" justifyContent="center" alignItems="center" disableEqualOverflow>
+                        {list_of_films()}
+                    </Grid>
+                </Grid>
+                <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
+                    <Pagination count={pageCount} page={page} onChange={handlePageChange}  />
                 </Grid>
             </Grid>
         )
