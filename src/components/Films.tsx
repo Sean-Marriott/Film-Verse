@@ -72,7 +72,7 @@ const Films = () => {
                         <CardMedia
                             component="img"
                             height="140"
-                            src="contemplative-reptile.jpg"
+                            src={"http://localhost:4941/api/v1/films/" + item.filmId +"/image"}
                             alt="green iguana"
                         />
                         <CardContent>
