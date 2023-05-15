@@ -1,7 +1,12 @@
 import axios from "axios";
 import React from "react";
-import {Link} from "react-router-dom";
 import Film from "./Film"
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Typography from '@mui/material/Typography';
+import {Avatar, CardActionArea, CardHeader} from '@mui/material';
+import Grid from '@mui/material/Unstable_Grid2';
 const Films = () => {
     const [films, setFilms] = React.useState < Array < Film >> ([])
     const [errorFlag, setErrorFlag] = React.useState(false)
@@ -23,17 +28,64 @@ const Films = () => {
         })
     }
 
+    function convertToDate(dateString: string): string {
+        const date = new Date(dateString);
+        return date.toLocaleString();
+    }
+
     const list_of_films = () => {
         return films.map((item: Film) =>
-            <tr key={item.filmId}>
-                <th scope="row">{item.filmId}</th>
-                <td>{item.title}</td>
-                <td>{item.ageRating}</td>
-                <td>{item.rating}</td>
-                <td>{item.releaseDate}</td>
-                <td>{item.genreId}</td>
-                <td><Link to={"/films/" + item.filmId}>Go to film</Link></td>
-            </tr>
+            <Grid>
+                <Card sx={{ maxWidth: 345 }}>
+                    <CardHeader
+                        title={item.title}
+                    />
+                    <CardActionArea>
+                        <CardMedia
+                            component="img"
+                            height="140"
+                            src="contemplative-reptile.jpg"
+                            alt="green iguana"
+                        />
+                        <CardContent>
+                            <Grid container spacing={1}>
+                                <Grid xs>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Genre
+                                    </Typography>
+                                </Grid>
+                                <Grid xs="auto" display="flex" justifyContent="right" alignItems="right">
+                                    <Typography variant="body2" color="text.secondary">
+                                        {convertToDate(item.releaseDate)}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+                            <Grid container spacing={1}>
+                                <Grid xs>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {item.ageRating}
+                                    </Typography>
+                                </Grid>
+                                <Grid xs="auto" display="flex" justifyContent="right" alignItems="right">
+                                    <Typography variant="body2" color="text.secondary">
+                                        Rating: {item.rating}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+                            <Grid container spacing={1}>
+                                <Grid xs>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {item.directorFirstName}  {item.directorLastName}
+                                    </Typography>
+                                </Grid>
+                                <Grid xs="auto" display="flex" justifyContent="right" alignItems="right">
+                                    <Avatar alt="Remy Sharp" src="avatar.jpg" />
+                                </Grid>
+                            </Grid>
+                        </CardContent>
+                    </CardActionArea>
+                </Card>
+            </Grid>
         )
     }
 
@@ -48,23 +100,14 @@ const Films = () => {
         )
     } else {
         return (
-            <div>
-                <h1>Films</h1>
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Title</th>
-                            <th scope="col">Age Rating</th>
-                            <th scope="col">Release Date</th>
-                            <th scope="col">Genre</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {list_of_films()}
-                    </tbody>
-                </table>
-            </div>
+            <Grid container display="flex" justifyContent="center" alignItems="center">
+                <Grid>
+                    <h1>Films</h1>
+                </Grid>
+                <Grid container spacing={6} display="flex" justifyContent="center" alignItems="center" disableEqualOverflow>
+                    {list_of_films()}
+                </Grid>
+            </Grid>
         )
     }
 }

@@ -8,4 +8,5 @@ type Film = {
     releaseDate: string,
     ageRating: string,
     rating: number,
+    image: string
 }
