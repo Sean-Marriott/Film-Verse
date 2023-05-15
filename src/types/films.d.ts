@@ -10,3 +10,8 @@ type Film = {
     rating: number,
     image: string
 }
+
+type Genre = {
+    genreId: number,
+    name: string
+}

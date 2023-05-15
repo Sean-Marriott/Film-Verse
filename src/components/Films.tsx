@@ -9,6 +9,7 @@ import {Avatar, CardActionArea, CardHeader, Pagination} from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 const Films = () => {
     const [films, setFilms] = React.useState < Array < Film >> ([])
+    const [genres, setGenres] = React.useState < Array < Genre >> ([])
     const [errorFlag, setErrorFlag] = React.useState(false)
     const [errorMessage, setErrorMessage] = React.useState("")
     const [page, setPage] = useState(1);
@@ -17,6 +18,7 @@ const Films = () => {
 
     React.useEffect(() => {
         getFilms()
+        getGenres()
     }, [])
 
     const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -33,6 +35,25 @@ const Films = () => {
             setErrorFlag(true)
             setErrorMessage(error.toString())
         })
+    }
+
+    const getGenres = () => {
+        axios.get('http://localhost:4941/api/v1/films/genres')
+            .then((response) => {
+                setErrorFlag(false)
+                setErrorMessage("")
+                setGenres(response.data)
+            }, (error) => {
+                setErrorFlag(true)
+                setErrorMessage(error.toString())
+            })
+    }
+
+    function getGenre(genreId: number): string {
+        for (const Genre of genres) {
+            if (Genre.genreId === genreId) { return Genre.name}
+        }
+        return "undefined"
     }
 
     function convertToDate(dateString: string): string {
@@ -55,37 +76,33 @@ const Films = () => {
                             alt="green iguana"
                         />
                         <CardContent>
-                            <Grid container spacing={1}>
-                                <Grid xs>
+                            <Grid container rowSpacing={1}>
+                                <Grid xs={6}>
                                     <Typography variant="body2" color="text.secondary">
-                                        Genre
+                                        {getGenre(item.genreId)}
                                     </Typography>
                                 </Grid>
-                                <Grid xs="auto" display="flex" justifyContent="right" alignItems="right">
+                                <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
                                     <Typography variant="body2" color="text.secondary">
                                         {convertToDate(item.releaseDate)}
                                     </Typography>
                                 </Grid>
-                            </Grid>
-                            <Grid container spacing={1}>
-                                <Grid xs>
+                                <Grid xs={6}>
                                     <Typography variant="body2" color="text.secondary">
                                         {item.ageRating}
                                     </Typography>
                                 </Grid>
-                                <Grid xs="auto" display="flex" justifyContent="right" alignItems="right">
+                                <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
                                     <Typography variant="body2" color="text.secondary">
-                                        Rating: {item.rating}
+                                        Rating: {item.rating}/10
                                     </Typography>
                                 </Grid>
-                            </Grid>
-                            <Grid container spacing={1}>
-                                <Grid xs>
+                                <Grid xs={6} display="flex" alignItems="center">
                                     <Typography variant="body2" color="text.secondary">
                                         {item.directorFirstName}  {item.directorLastName}
                                     </Typography>
                                 </Grid>
-                                <Grid xs="auto" display="flex" justifyContent="right" alignItems="right">
+                                <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
                                     <Avatar alt="Remy Sharp" src="avatar.jpg" />
                                 </Grid>
                             </Grid>
