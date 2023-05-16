@@ -103,7 +103,7 @@ const Films = () => {
                                     </Typography>
                                 </Grid>
                                 <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
-                                    <Avatar alt="Remy Sharp" src="avatar.jpg" />
+                                    <Avatar alt="Remy Sharp" src={"http://localhost:4941/api/v1/users/" + item.directorId +"/image"} />
                                 </Grid>
                             </Grid>
                         </CardContent>
