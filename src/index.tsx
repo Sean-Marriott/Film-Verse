@@ -5,6 +5,7 @@ import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
 import NotFound from "./components/NotFound";
 import Films from "./components/Films";
 import Film from "./components/Film";
+import Navbar from "./components/Navbar";
 
 
 const root = ReactDOM.createRoot(
@@ -12,6 +13,7 @@ const root = ReactDOM.createRoot(
 );
 root.render(
     <div className="App">
+        <Navbar />
         <Router>
             <div>
                 <Routes>
