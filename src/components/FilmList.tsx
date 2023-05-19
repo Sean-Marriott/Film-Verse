@@ -45,7 +45,7 @@ const FilmList = () => {
     const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
         setPage(value);
     }
-    const film_rows = () => films.slice((page - 1) * filmsPerPage, page * filmsPerPage).map((film: Film) => <FilmListObject key={film.filmId + film.title} film={film} genres={genres} />)
+    const film_rows = () => films.slice((page - 1) * filmsPerPage, page * filmsPerPage).map((film: Film) => <Grid><FilmListObject key={film.filmId + film.title} film={film} genres={genres} /></Grid>)
 
     return (
         <Grid container rowSpacing={2}>

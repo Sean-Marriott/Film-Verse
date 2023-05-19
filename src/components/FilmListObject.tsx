@@ -28,53 +28,51 @@ const FilmListObject = (props: IFilmProps) => {
     }
 
     return (
-        <Grid>
-            <Card sx={{ maxWidth: 345 }}>
-                <CardHeader
-                    title={film.title}
+        <Card sx={{ maxWidth: 345 }}>
+            <CardHeader
+                title={film.title}
+            />
+            <CardActionArea>
+                <CardMedia
+                    component="img"
+                    height="140"
+                    src={"http://localhost:4941/api/v1/films/" + film.filmId +"/image"}
+                    alt="green iguana"
                 />
-                <CardActionArea>
-                    <CardMedia
-                        component="img"
-                        height="140"
-                        src={"http://localhost:4941/api/v1/films/" + film.filmId +"/image"}
-                        alt="green iguana"
-                    />
-                    <CardContent>
-                        <Grid container rowSpacing={1}>
-                            <Grid xs={6}>
-                                <Typography variant="body2" color="text.secondary">
-                                    {getGenre(film.genreId)}
-                                </Typography>
-                            </Grid>
-                            <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
-                                <Typography variant="body2" color="text.secondary">
-                                    {convertToDate(film.releaseDate)}
-                                </Typography>
-                            </Grid>
-                            <Grid xs={6}>
-                                <Typography variant="body2" color="text.secondary">
-                                    {film.ageRating}
-                                </Typography>
-                            </Grid>
-                            <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
-                                <Typography variant="body2" color="text.secondary">
-                                    Rating: {film.rating}/10
-                                </Typography>
-                            </Grid>
-                            <Grid xs={6} display="flex" alignItems="center">
-                                <Typography variant="body2" color="text.secondary">
-                                    {film.directorFirstName}  {film.directorLastName}
-                                </Typography>
-                            </Grid>
-                            <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
-                                <Avatar alt="Remy Sharp" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
-                            </Grid>
+                <CardContent>
+                    <Grid container rowSpacing={1}>
+                        <Grid xs={6}>
+                            <Typography variant="body2" color="text.secondary">
+                                {getGenre(film.genreId)}
+                            </Typography>
                         </Grid>
-                    </CardContent>
-                </CardActionArea>
-            </Card>
-        </Grid>
+                        <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
+                            <Typography variant="body2" color="text.secondary">
+                                {convertToDate(film.releaseDate)}
+                            </Typography>
+                        </Grid>
+                        <Grid xs={6}>
+                            <Typography variant="body2" color="text.secondary">
+                                {film.ageRating}
+                            </Typography>
+                        </Grid>
+                        <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
+                            <Typography variant="body2" color="text.secondary">
+                                Rating: {film.rating}/10
+                            </Typography>
+                        </Grid>
+                        <Grid xs={6} display="flex" alignItems="center">
+                            <Typography variant="body2" color="text.secondary">
+                                {film.directorFirstName}  {film.directorLastName}
+                            </Typography>
+                        </Grid>
+                        <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
+                            <Avatar alt="Remy Sharp" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
+                        </Grid>
+                    </Grid>
+                </CardContent>
+            </CardActionArea>
+        </Card>
     )
 }
 
