@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
 import NotFound from "./components/NotFound";
-import Films from "./components/Films";
 import Film from "./components/Film";
 import Navbar from "./components/Navbar";
+import FilmList from "./components/FilmList";
 
 
 const root = ReactDOM.createRoot(
@@ -17,7 +17,7 @@ root.render(
         <Router>
             <div>
                 <Routes>
-                    <Route path="/films" element={<Films/>}/>
+                    <Route path="/films" element={<FilmList/>}/>
                     <Route path="/films/:id" element={<Film/>}/>
                     <Route path="*" element={<NotFound/>}/>
                 </Routes>
