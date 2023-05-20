@@ -6,16 +6,18 @@ import {
     Pagination,
     SelectChangeEvent,
     FormControl,
-    InputLabel, Select, OutlinedInput
+    InputLabel, Select, OutlinedInput, TextField, InputAdornment
 } from "@mui/material";
 import FilmListObject from "./FilmListObject";
 import Grid from "@mui/material/Unstable_Grid2";
 import Film from "./Film";
 import MenuItem from "@mui/material/MenuItem";
+import SearchIcon from "@mui/icons-material/Search";
 
 const FilmList = () => {
     const [films, setFilms] = React.useState<Array<Film>>([])
     const [genres, setGenres] = React.useState < Array < Genre >> ([])
+    const [searchTerm, setSearchTerm] = React.useState('')
     const [sort, setSort] = React.useState("RELEASED_ASC")
     const [filterGenres, setFilterGenres] = React.useState < Array < string >> ([])
     const [filterAgeRatings, setFilterAgeRatings] = React.useState < Array < string >> ([])
@@ -44,7 +46,7 @@ const FilmList = () => {
 
     React.useEffect(() => {
         getFilms()
-    }, [filterGenres, filterAgeRatings, sort])
+    }, [filterGenres, filterAgeRatings, sort, searchTerm])
 
     const ITEM_HEIGHT = 48;
     const ITEM_PADDING_TOP = 8;
@@ -71,19 +73,31 @@ const FilmList = () => {
     }
 
     const getFilms = () => {
-        axios.get('http://localhost:4941/api/v1/films', {params: {
-                genreIds: filterGenres,
-                ageRatings: filterAgeRatings,
-                sortBy: sort
-            }})
-            .then((response) => {
-                setErrorFlag(false)
-                setErrorMessage("")
-                setFilms(response.data.films)
-            }, (error) => {
-                setErrorFlag(true)
-                setErrorMessage(error.toString())
-            })
+        let q = searchTerm
+        let request
+        if (q === "") {
+             request = axios.get('http://localhost:4941/api/v1/films', {params: {
+                    genreIds: filterGenres,
+                    ageRatings: filterAgeRatings,
+                    sortBy: sort
+                }})
+        } else {
+             request = axios.get('http://localhost:4941/api/v1/films', {params: {
+                    q: searchTerm,
+                    genreIds: filterGenres,
+                    ageRatings: filterAgeRatings,
+                    sortBy: sort
+                }})
+        }
+        request.then((response) => {
+            setErrorFlag(false)
+            setErrorMessage("")
+            setFilms(response.data.films)
+        }, (error) => {
+            setErrorFlag(true)
+            setErrorMessage(error.toString())
+        })
+
         console.log("Genres", filterGenres)
         console.log("Films", films)
     }
@@ -119,14 +133,35 @@ const FilmList = () => {
         setSort(event.target.value);
     };
 
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(event.target.value)
+    }
+
 
     return (
-        <Grid container rowSpacing={2} sx={{ ml: 10 }}>
+        <Grid container rowSpacing={2} sx={{ ml: 6 }}>
             <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
                 <h1>Films</h1>
             </Grid>
-            <Grid xs={12} display="flex">
-                <Grid xs={12} display="flex">
+            <Grid container rowSpacing={{xs:0}} xs={12} display="flex" justifyContent="center" alignItems="center">
+                <Grid display="flex">
+                    <FormControl sx={{ m: 1, width: 300 }}>
+                        <TextField
+                            id="standard-basic"
+                            label="Search"
+                            variant="outlined"
+                            onChange={handleSearch}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <SearchIcon/>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    </FormControl>
+                </Grid>
+                <Grid display="flex">
                     <FormControl sx={{ m: 1, width: 300 }}>
                         <InputLabel id="multiple-genre-label">Genre</InputLabel>
                         <Select
@@ -149,7 +184,7 @@ const FilmList = () => {
                         </Select>
                     </FormControl>
                 </Grid>
-                <Grid xs={12} display="flex">
+                <Grid display="flex">
                     <FormControl sx={{ m: 1, width: 300 }}>
                         <InputLabel id="multiple-age-rating-label">Age Rating</InputLabel>
                         <Select
@@ -172,7 +207,7 @@ const FilmList = () => {
                         </Select>
                     </FormControl>
                 </Grid>
-                <Grid xs={12} display="flex">
+                <Grid display="flex">
                 <FormControl sx={{ m: 1, width: 300 }}>
                     <InputLabel id="select-sort-label">Sort</InputLabel>
                     <Select
@@ -193,7 +228,7 @@ const FilmList = () => {
                 </Grid>
             </Grid>
             <Grid xs={12} display="flex">
-                <Grid container spacing={6} display="flex"  alignItems="center" disableEqualOverflow>
+                <Grid container spacing={6} display="flex" justifyContent="center"  alignItems="center" disableEqualOverflow>
                     {errorFlag?
                         <Alert severity="error">
                             <AlertTitle> Error </AlertTitle>
