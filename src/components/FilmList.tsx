@@ -17,11 +17,21 @@ const FilmList = () => {
     const [films, setFilms] = React.useState<Array<Film>>([])
     const [genres, setGenres] = React.useState < Array < Genre >> ([])
     const [filterGenres, setFilterGenres] = React.useState < Array < string >> ([])
+    const [filterAgeRatings, setFilterAgeRatings] = React.useState < Array < string >> ([])
     const [errorFlag, setErrorFlag] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState("")
     const [page, setPage] = useState(1);
     const filmsPerPage = 10;
     const pageCount = Math.ceil(films.length / filmsPerPage)
+    const ageRatings = [
+        "G",
+        "PG",
+        "M",
+        "R13",
+        "R16",
+        "R18",
+        "TBC"
+    ]
 
 
 
@@ -33,7 +43,7 @@ const FilmList = () => {
 
     React.useEffect(() => {
         getFilms()
-    }, [filterGenres])
+    }, [filterGenres, filterAgeRatings])
 
     const ITEM_HEIGHT = 48;
     const ITEM_PADDING_TOP = 8;
@@ -61,7 +71,8 @@ const FilmList = () => {
 
     const getFilms = () => {
         axios.get('http://localhost:4941/api/v1/films', {params: {
-                genreIds: filterGenres
+                genreIds: filterGenres,
+                ageRatings: filterAgeRatings
             }})
             .then((response) => {
                 setErrorFlag(false)
@@ -80,7 +91,7 @@ const FilmList = () => {
     }
     const film_rows = () => films.slice((page - 1) * filmsPerPage, page * filmsPerPage).map((film: Film) => <Grid key={film.filmId}><FilmListObject film={film} genres={genres} /></Grid>)
 
-    const handleChange = (event: SelectChangeEvent<typeof filterGenres>) => {
+    const filterGenre = (event: SelectChangeEvent<typeof filterGenres>) => {
         const {
             target: { value },
         } = event;
@@ -91,14 +102,25 @@ const FilmList = () => {
         console.log(value)
     };
 
+    const filterAgeRating = (event: SelectChangeEvent<typeof ageRatings>) => {
+        const {
+            target: { value },
+        } = event;
+        setFilterAgeRatings(
+            // On autofill we get a stringified value.
+            typeof value === 'string' ? value.split(',') : value,
+        );
+        console.log(value)
+    };
+
 
     return (
-        <Grid container rowSpacing={2}>
+        <Grid container rowSpacing={2} sx={{ ml: 10 }}>
             <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
                 <h1>Films</h1>
             </Grid>
-            <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
-                <div>
+            <Grid xs={12} display="flex">
+                <Grid xs={12} display="flex">
                     <FormControl sx={{ m: 1, width: 300 }}>
                         <InputLabel id="multiple-genre-label">Genre</InputLabel>
                         <Select
@@ -106,7 +128,7 @@ const FilmList = () => {
                             id="multiple-genre"
                             multiple
                             value={filterGenres}
-                            onChange={handleChange}
+                            onChange={filterGenre}
                             input={<OutlinedInput label="Genres" />}
                             MenuProps={MenuProps}
                         >
@@ -120,10 +142,33 @@ const FilmList = () => {
                             ))}
                         </Select>
                     </FormControl>
-                </div>
+                </Grid>
+                <Grid xs={12} display="flex">
+                    <FormControl sx={{ m: 1, width: 300 }}>
+                        <InputLabel id="multiple-age-rating-label">Age Rating</InputLabel>
+                        <Select
+                            labelId="multiple-genre-label"
+                            id="multiple-genre"
+                            multiple
+                            value={filterAgeRatings}
+                            onChange={filterAgeRating}
+                            input={<OutlinedInput label="AgeRating" />}
+                            MenuProps={MenuProps}
+                        >
+                            {ageRatings.map((ageRating) => (
+                                <MenuItem
+                                    key={ageRating}
+                                    value={ageRating}
+                                >
+                                    {ageRating}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Grid>
             </Grid>
-            <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
-                <Grid container spacing={6} display="flex" justifyContent="center" alignItems="center" disableEqualOverflow>
+            <Grid xs={12} display="flex">
+                <Grid container spacing={6} display="flex"  alignItems="center" disableEqualOverflow>
                     {errorFlag?
                         <Alert severity="error">
                             <AlertTitle> Error </AlertTitle>
