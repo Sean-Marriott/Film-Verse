@@ -16,6 +16,7 @@ import MenuItem from "@mui/material/MenuItem";
 const FilmList = () => {
     const [films, setFilms] = React.useState<Array<Film>>([])
     const [genres, setGenres] = React.useState < Array < Genre >> ([])
+    const [sort, setSort] = React.useState("RELEASED_ASC")
     const [filterGenres, setFilterGenres] = React.useState < Array < string >> ([])
     const [filterAgeRatings, setFilterAgeRatings] = React.useState < Array < string >> ([])
     const [errorFlag, setErrorFlag] = React.useState(false);
@@ -43,7 +44,7 @@ const FilmList = () => {
 
     React.useEffect(() => {
         getFilms()
-    }, [filterGenres, filterAgeRatings])
+    }, [filterGenres, filterAgeRatings, sort])
 
     const ITEM_HEIGHT = 48;
     const ITEM_PADDING_TOP = 8;
@@ -72,7 +73,8 @@ const FilmList = () => {
     const getFilms = () => {
         axios.get('http://localhost:4941/api/v1/films', {params: {
                 genreIds: filterGenres,
-                ageRatings: filterAgeRatings
+                ageRatings: filterAgeRatings,
+                sortBy: sort
             }})
             .then((response) => {
                 setErrorFlag(false)
@@ -111,6 +113,10 @@ const FilmList = () => {
             typeof value === 'string' ? value.split(',') : value,
         );
         console.log(value)
+    };
+
+    const filterSort = (event: SelectChangeEvent) => {
+        setSort(event.target.value);
     };
 
 
@@ -165,6 +171,25 @@ const FilmList = () => {
                             ))}
                         </Select>
                     </FormControl>
+                </Grid>
+                <Grid xs={12} display="flex">
+                <FormControl sx={{ m: 1, width: 300 }}>
+                    <InputLabel id="select-sort-label">Sort</InputLabel>
+                    <Select
+                        labelId="select-sort-label"
+                        id="select-sort"
+                        value={sort}
+                        label="Sort"
+                        onChange={filterSort}
+                    >
+                        <MenuItem value={"RELEASED_ASC"}>Release Date Ascending</MenuItem>
+                        <MenuItem value={"RELEASED_DESC"}>Release Date Descending</MenuItem>
+                        <MenuItem value={"ALPHABETICAL_ASC"}>Alphabetically Ascending</MenuItem>
+                        <MenuItem value={"ALPHABETICAL_DESC"}>Alphabetically Descending</MenuItem>
+                        <MenuItem value={"RATING ASC"}>Rating Ascending</MenuItem>
+                        <MenuItem value={"RATING_DESC"}>Rating Descending</MenuItem>
+                    </Select>
+                </FormControl>
                 </Grid>
             </Grid>
             <Grid xs={12} display="flex">
