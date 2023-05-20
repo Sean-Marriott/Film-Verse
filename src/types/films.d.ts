@@ -1,6 +1,7 @@
 type Film = {
     filmId: number,
     title: string,
+    description: string,
     genreId: number,
     directorId: number,
     directorFirstName: string,
@@ -8,7 +9,9 @@ type Film = {
     releaseDate: string,
     ageRating: string,
     rating: number,
-    image: string
+    image: string,
+    numReviews: number,
+    runtime: number
 }
 
 type Genre = {

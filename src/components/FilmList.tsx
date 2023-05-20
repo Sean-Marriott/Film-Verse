@@ -21,7 +21,7 @@ const FilmList = () => {
     const [sort, setSort] = React.useState("RELEASED_ASC")
     const [filterGenres, setFilterGenres] = React.useState < Array < string >> ([])
     const [filterAgeRatings, setFilterAgeRatings] = React.useState < Array < string >> ([])
-    const [errorFlag, setErrorFlag] = React.useState(false);
+    const [errorFlag, setErrorFlag] = React.useState(false)
     const [errorMessage, setErrorMessage] = React.useState("")
     const [page, setPage] = useState(1);
     const filmsPerPage = 10;
@@ -93,6 +93,7 @@ const FilmList = () => {
             setErrorFlag(false)
             setErrorMessage("")
             setFilms(response.data.films)
+            console.log(response.data)
         }, (error) => {
             setErrorFlag(true)
             setErrorMessage(error.toString())
@@ -133,10 +134,6 @@ const FilmList = () => {
         setSort(event.target.value);
     };
 
-    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(event.target.value)
-    }
-
 
     return (
         <Grid container rowSpacing={2} sx={{ ml: 6 }}>
@@ -150,7 +147,7 @@ const FilmList = () => {
                             id="standard-basic"
                             label="Search"
                             variant="outlined"
-                            onChange={handleSearch}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
@@ -228,7 +225,7 @@ const FilmList = () => {
                 </Grid>
             </Grid>
             <Grid xs={12} display="flex">
-                <Grid container spacing={6} display="flex" justifyContent="center"  alignItems="center" disableEqualOverflow>
+                <Grid container spacing={6} columns={{ xs: 2, sm: 4, md: 6 }} display="flex" justifyContent="center"  alignItems="center" disableEqualOverflow>
                     {errorFlag?
                         <Alert severity="error">
                             <AlertTitle> Error </AlertTitle>

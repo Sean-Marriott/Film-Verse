@@ -5,6 +5,7 @@ import CardMedia from "@mui/material/CardMedia";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Unstable_Grid2";
 import Typography from "@mui/material/Typography";
+import {Link} from "react-router-dom";
 
 interface IFilmProps {
     film: Film
@@ -32,7 +33,7 @@ const FilmListObject = (props: IFilmProps) => {
             <CardHeader
                 title={film.title}
             />
-            <CardActionArea>
+            <CardActionArea component={Link} to={"/film/" + film.filmId}>
                 <CardMedia
                     component="img"
                     height="140"

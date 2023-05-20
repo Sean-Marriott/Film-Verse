@@ -18,7 +18,7 @@ root.render(
             <div>
                 <Routes>
                     <Route path="/films" element={<FilmList/>}/>
-                    <Route path="/films/:id" element={<Film/>}/>
+                    <Route path="/film/:id" element={<Film/>}/>
                     <Route path="*" element={<NotFound/>}/>
                 </Routes>
             </div>
