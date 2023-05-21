@@ -4,6 +4,33 @@ import React from "react";
 import {Alert, AlertTitle, Avatar, Chip, CircularProgress, Paper, Tab, Tabs, Typography} from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import CardMedia from "@mui/material/CardMedia";
+import Box from "@mui/material/Box";
+
+interface TabPanelProps {
+    children?: React.ReactNode;
+    index: number;
+    value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+    const { children, value, index, ...other } = props;
+
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+        >
+            {value === index && (
+                <Box sx={{ p: 1}}>
+                    {children}
+                </Box>
+            )}
+        </div>
+    );
+}
 
 const Film = () => {
     const { id } = useParams<{ id: string }>();
@@ -12,6 +39,7 @@ const Film = () => {
     const [errorFlag, setErrorFlag] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState("");
     const [tab, setTab] = React.useState(1);
+
 
     React.useEffect(() => {
         getFilm()
@@ -89,7 +117,7 @@ const Film = () => {
                                     sx={{ objectFit: "fill" }}
                                 />
                             </Grid>
-                            <Grid container display="flex"   direction="column" spacing={2} sm={12} md={6} sx={{p:2}}>
+                            <Grid container display="flex" direction="column" spacing={2} sm={12} md={6} sx={{p:2}}>
                                 <Grid xs={12}>
                                     <Tabs
                                         value={tab}
@@ -102,20 +130,25 @@ const Film = () => {
                                         <Tab value={2} label="Reviews" />
                                     </Tabs>
                                 </Grid>
-                                <Grid xs={12}>
-                                    <Chip label={getGenre(film.genreId)} variant="outlined" />
-                                </Grid>
-                                <Grid xs={12}>
-                                    <Typography variant="body1">{film.description}</Typography>
-                                </Grid>
-                                <Grid xs={12} display="flex" alignItems="center" justifyContent="space-between">
-                                    <Grid>
-                                        <Typography variant="body1">{film.directorFirstName + " " + film.directorLastName}</Typography>
+
+                                <TabPanel value={tab} index={1}>
+                                    <Grid container direction="column" spacing={3} sx={{p:2}}>
+                                        <Grid xs={12}>
+                                            <Chip label={getGenre(film.genreId)} variant="outlined" />
+                                        </Grid>
+                                        <Grid xs={12}>
+                                            <Typography variant="body1">{film.description}</Typography>
+                                        </Grid>
+                                        <Grid xs={12} sx={{p:0}} display="flex" alignItems="center" justifyContent="end">
+                                            <Grid>
+                                                <Typography variant="body1">{film.directorFirstName + " " + film.directorLastName}</Typography>
+                                            </Grid>
+                                            <Grid>
+                                                <Avatar alt="Director Profile Pic" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
+                                            </Grid>
+                                        </Grid>
                                     </Grid>
-                                    <Grid>
-                                        <Avatar alt="Director Profile Pic" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
-                                    </Grid>
-                                </Grid>
+                                </TabPanel>
                             </Grid>
                         </Grid>
                     </Paper>
