@@ -36,8 +36,6 @@ const FilmList = () => {
         "TBC"
     ]
 
-
-
     React.useEffect(() => {
         getGenres()
         getFilms()
@@ -136,7 +134,7 @@ const FilmList = () => {
 
 
     return (
-        <Grid container rowSpacing={2} sx={{ ml: 6 }}>
+        <Grid container rowSpacing={2}>
             <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
                 <h1>Films</h1>
             </Grid>

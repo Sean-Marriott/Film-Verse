@@ -17,6 +17,7 @@ import {
 import Grid from "@mui/material/Unstable_Grid2";
 import CardMedia from "@mui/material/CardMedia";
 import Box from "@mui/material/Box";
+import ReviewObject from "./ReviewObject";
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -48,6 +49,7 @@ const Film = () => {
     const { id } = useParams<{ id: string }>();
     const [film, setFilm] = React.useState <Film>()
     const [genres, setGenres] = React.useState <Genre[]> ([])
+    const [reviews, setReviews] = React.useState <Review[]> ([])
     const [errorFlag, setErrorFlag] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState("");
     const [tab, setTab] = React.useState(1);
@@ -56,6 +58,7 @@ const Film = () => {
     React.useEffect(() => {
         getFilm()
         getGenres()
+        getReviews()
     }, [])
 
     const getFilm = () => {
@@ -82,9 +85,23 @@ const Film = () => {
             })
     }
 
+    const getReviews = () => {
+        axios.get('http://localhost:4941/api/v1/films/' + id + '/reviews')
+            .then((response) => {
+                setErrorFlag(false)
+                setErrorMessage("")
+                setReviews(response.data)
+            }, (error) => {
+                setErrorFlag(true)
+                setErrorMessage(error.toString())
+            })
+    }
+
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTab(newValue);
     };
+
+    const review_rows = () => reviews.map((review: Review) => <ReviewObject review={review}/>)
 
     function getGenre(genreId: number): string {
         for (const Genre of genres) {
@@ -97,6 +114,8 @@ const Film = () => {
         const date = new Date(dateString);
         return date.toLocaleString();
     }
+
+    console.log(reviews)
 
 
     if (!film) {
@@ -168,7 +187,9 @@ const Film = () => {
                                     </Grid>
                                 </TabPanel>
                                 <TabPanel value={tab} index={2}>
-                                    <h1>Reviews</h1>
+                                    <Grid container direction="column" spacing={1} sx={{flexWrap:"nowrap", overflow:"auto", maxHeight:400}}>
+                                        {review_rows()}
+                                    </Grid>
                                 </TabPanel>
                             </Grid>
                         </Grid>
