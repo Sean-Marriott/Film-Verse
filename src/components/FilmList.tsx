@@ -134,7 +134,7 @@ const FilmList = () => {
 
 
     return (
-        <Grid container rowSpacing={2}>
+        <Grid container rowSpacing={2} sx={{m:2}}>
             <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
                 <h1>Films</h1>
             </Grid>
@@ -222,17 +222,15 @@ const FilmList = () => {
                 </FormControl>
                 </Grid>
             </Grid>
-            <Grid xs={12} display="flex">
-                <Grid container spacing={6} columns={{ xs: 2, sm: 4, md: 6 }} display="flex" justifyContent="center"  alignItems="center" disableEqualOverflow>
-                    {errorFlag?
-                        <Alert severity="error">
-                            <AlertTitle> Error </AlertTitle>
-                            { errorMessage }
-                        </Alert>: ""}
-                    { film_rows() }
-                </Grid>
+            <Grid container xs={12} spacing={6} display="flex" justifyContent="center"  alignItems="center" disableEqualOverflow>
+                {errorFlag?
+                    <Alert severity="error">
+                        <AlertTitle> Error </AlertTitle>
+                        { errorMessage }
+                    </Alert>: ""}
+                { film_rows() }
             </Grid>
-            <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
+            <Grid xs={12} sx={{mt:3}} display="flex" justifyContent="center" alignItems="center">
                 <Pagination count={pageCount} page={page} onChange={handlePageChange}  />
             </Grid>
         </Grid>

@@ -41,7 +41,7 @@ const FilmListObject = (props: IFilmListProps) => {
                     alt="Film Hero Image"
                 />
                 <CardContent>
-                    <Grid container rowSpacing={1}>
+                    <Grid container>
                         <Grid xs={6}>
                             <Typography variant="body2" color="text.secondary">
                                 {getGenre(film.genreId)}
