@@ -23,7 +23,7 @@ const ReviewObject = (props: IReviewObjectProps) => {
                     </Stack>
                 </Grid>
                 <Grid xs={12}>
-                    <Rating name="half-rating-read" defaultValue={review.rating} precision={0.5} readOnly />
+                    <Rating max={10} name="half-rating-read" defaultValue={review.rating} precision={0.5} readOnly />
                 </Grid>
                 <Grid xs={12}>
                     <Typography variant="body2">{review.review}</Typography>

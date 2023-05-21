@@ -169,7 +169,7 @@ const Film = () => {
                                             <Grid>
                                                 <Stack spacing={1} direction="row" alignItems="center">
                                                     <Chip label={getGenre(film.genreId)} variant="outlined" />
-                                                    <Rating name="half-rating-read" defaultValue={film.rating} precision={0.5} readOnly />
+                                                    <Rating max={10} name="half-rating-read" defaultValue={film.rating} precision={0.5} readOnly />
                                                 </Stack>
                                             </Grid>
                                         </Grid>
