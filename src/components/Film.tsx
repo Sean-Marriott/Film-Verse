@@ -30,7 +30,7 @@ function useWindowSize() {
     const[similarFilmsPerPage, setSimilarFilmsPerPage] = useState(1)
     const handleResize = () => {
         if (window.innerWidth > 0) setSimilarFilmsPerPage(1)
-        if (window.innerWidth > 610) setSimilarFilmsPerPage(2)
+        if (window.innerWidth > 630) setSimilarFilmsPerPage(2)
         if (window.innerWidth > 850) setSimilarFilmsPerPage(3)
         if (window.innerWidth >= 900) setSimilarFilmsPerPage(1)
         if (window.innerWidth > 1060) setSimilarFilmsPerPage(2)
@@ -85,7 +85,7 @@ const Film = () => {
         void fetchData()
         getGenres()
         getReviews()
-    }, [])
+    }, [id])
 
 
     async function fetchData() {
@@ -160,7 +160,7 @@ const Film = () => {
             return <CircularProgress />
         }
         if (page > pageCount) { setPage((page) => page-1) }
-        return similarFilms.slice((page - 1) * similarFilmsPerPage, page * similarFilmsPerPage).map((film: Film) => <SimilarFilmObject key={film.filmId} film={film}/>)
+        return similarFilms.slice((page - 1) * similarFilmsPerPage, page * similarFilmsPerPage).map((film: Film) => <SimilarFilmObject key={film.filmId} film={film} genres={genres}/>)
     }
 
     function getGenre(genreId: number): string {
