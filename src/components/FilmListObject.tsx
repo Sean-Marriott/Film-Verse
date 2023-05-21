@@ -7,14 +7,14 @@ import Grid from "@mui/material/Unstable_Grid2";
 import Typography from "@mui/material/Typography";
 import {Link} from "react-router-dom";
 
-interface IFilmProps {
+interface IFilmListProps {
     film: Film
     genres: Array<Genre>
 }
 
 
 
-const FilmListObject = (props: IFilmProps) => {
+const FilmListObject = (props: IFilmListProps) => {
     const [film] = React.useState < Film > (props.film)
     const [genres] = React.useState < Array < Genre >> (props.genres)
     function getGenre(genreId: number): string {
@@ -38,7 +38,7 @@ const FilmListObject = (props: IFilmProps) => {
                     component="img"
                     height="140"
                     src={"http://localhost:4941/api/v1/films/" + film.filmId +"/image"}
-                    alt="green iguana"
+                    alt="Film Hero Image"
                 />
                 <CardContent>
                     <Grid container rowSpacing={1}>
@@ -68,7 +68,7 @@ const FilmListObject = (props: IFilmProps) => {
                             </Typography>
                         </Grid>
                         <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
-                            <Avatar alt="Remy Sharp" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
+                            <Avatar alt="Director Profile Pic" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
                         </Grid>
                     </Grid>
                 </CardContent>
