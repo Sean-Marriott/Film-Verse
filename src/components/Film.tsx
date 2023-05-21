@@ -1,7 +1,19 @@
 import axios from 'axios';
 import {useParams} from "react-router-dom";
 import React from "react";
-import {Alert, AlertTitle, Avatar, Chip, CircularProgress, Paper, Tab, Tabs, Typography} from "@mui/material";
+import {
+    Alert,
+    AlertTitle,
+    Avatar,
+    Chip,
+    CircularProgress,
+    Paper,
+    Rating,
+    Stack,
+    Tab,
+    Tabs,
+    Typography
+} from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import CardMedia from "@mui/material/CardMedia";
 import Box from "@mui/material/Box";
@@ -24,7 +36,7 @@ function TabPanel(props: TabPanelProps) {
             {...other}
         >
             {value === index && (
-                <Box sx={{ p: 1}}>
+                <Box>
                     {children}
                 </Box>
             )}
@@ -107,8 +119,6 @@ const Film = () => {
                     <Paper elevation={3}>
                         <Grid container >
                             <Grid sm={12} md={6} sx={{p:2}}>
-                                <Typography variant="h4">{film.title}</Typography>
-                                <Typography variant="subtitle2">{convertToDate(film.releaseDate)}</Typography>
                                 <CardMedia
                                     component="img"
                                     height="500"
@@ -117,12 +127,16 @@ const Film = () => {
                                     sx={{ objectFit: "fill" }}
                                 />
                             </Grid>
-                            <Grid container display="flex" direction="column" spacing={2} sm={12} md={6} sx={{p:2}}>
+                            <Grid container display="flex" direction="column" rowSpacing={2} sm={12} md={6} sx={{p:2}}>
+                                <Grid xs={12} sx={{borderBottom:1}}>
+                                    <Typography variant="h4">{film.title}</Typography>
+                                    <Typography variant="subtitle2">{convertToDate(film.releaseDate)}</Typography>
+                                </Grid>
                                 <Grid xs={12}>
                                     <Tabs
                                         value={tab}
                                         onChange={handleTabChange}
-                                        centered
+
                                         textColor="secondary"
                                         indicatorColor="secondary"
                                     >
@@ -130,17 +144,21 @@ const Film = () => {
                                         <Tab value={2} label="Reviews" />
                                     </Tabs>
                                 </Grid>
-
                                 <TabPanel value={tab} index={1}>
-                                    <Grid container direction="column" spacing={3} sx={{p:2}}>
-                                        <Grid xs={12}>
-                                            <Chip label={getGenre(film.genreId)} variant="outlined" />
+                                    <Grid container direction="column" sx={{p:1}} rowSpacing={2}>
+                                        <Grid xs={12} container>
+                                            <Grid>
+                                                <Stack spacing={1} direction="row" alignItems="center">
+                                                    <Chip label={getGenre(film.genreId)} variant="outlined" />
+                                                    <Rating name="half-rating-read" defaultValue={film.rating} precision={0.5} readOnly />
+                                                </Stack>
+                                            </Grid>
                                         </Grid>
                                         <Grid xs={12}>
                                             <Typography variant="body1">{film.description}</Typography>
                                         </Grid>
                                         <Grid xs={12} sx={{p:0}} display="flex" alignItems="center" justifyContent="end">
-                                            <Grid>
+                                            <Grid sx={{mr:2}}>
                                                 <Typography variant="body1">{film.directorFirstName + " " + film.directorLastName}</Typography>
                                             </Grid>
                                             <Grid>
@@ -148,6 +166,9 @@ const Film = () => {
                                             </Grid>
                                         </Grid>
                                     </Grid>
+                                </TabPanel>
+                                <TabPanel value={tab} index={2}>
+                                    <h1>Reviews</h1>
                                 </TabPanel>
                             </Grid>
                         </Grid>
