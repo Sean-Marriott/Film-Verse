@@ -1,31 +1,35 @@
-import axios from 'axios';
+import {AxiosError} from 'axios';
 import React, {useState} from "react";
 import {
-    AlertTitle,
-    Alert,
     Pagination,
     SelectChangeEvent,
     FormControl,
-    InputLabel, Select, OutlinedInput, TextField, InputAdornment
+    InputLabel, Select, OutlinedInput, TextField, InputAdornment, CircularProgress
 } from "@mui/material";
 import FilmListObject from "./FilmListObject";
 import Grid from "@mui/material/Unstable_Grid2";
 import Film from "./Film";
 import MenuItem from "@mui/material/MenuItem";
 import SearchIcon from "@mui/icons-material/Search";
+import {useQuery} from "react-query";
+import {getFilmsParametrised, getGenres} from "../api/filmsApi";
 
 const FilmList = () => {
-    const [films, setFilms] = React.useState<Array<Film>>([])
-    const [genres, setGenres] = React.useState < Array < Genre >> ([])
     const [searchTerm, setSearchTerm] = React.useState('')
     const [sort, setSort] = React.useState("RELEASED_ASC")
     const [filterGenres, setFilterGenres] = React.useState < Array < string >> ([])
     const [filterAgeRatings, setFilterAgeRatings] = React.useState < Array < string >> ([])
-    const [errorFlag, setErrorFlag] = React.useState(false)
-    const [errorMessage, setErrorMessage] = React.useState("")
-    const [page, setPage] = useState(1);
-    const filmsPerPage = 10;
-    const pageCount = Math.ceil(films.length / filmsPerPage)
+    const [page, setPage] = useState(1)
+    const FILMS_PER_PAGE = 10;
+
+    const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
+    const { data, status: filmsStatus, error: filmsError } = useQuery(
+        ['films', searchTerm, sort, filterGenres, filterAgeRatings],
+        () => getFilmsParametrised(searchTerm, filterGenres, filterAgeRatings, sort))
+
+    React.useEffect(() => {
+    }, [])
+
     const ageRatings = [
         "G",
         "PG",
@@ -35,16 +39,6 @@ const FilmList = () => {
         "R18",
         "TBC"
     ]
-
-    React.useEffect(() => {
-        getGenres()
-        getFilms()
-    }, [])
-
-
-    React.useEffect(() => {
-        getFilms()
-    }, [filterGenres, filterAgeRatings, sort, searchTerm])
 
     const ITEM_HEIGHT = 48;
     const ITEM_PADDING_TOP = 8;
@@ -69,53 +63,9 @@ const FilmList = () => {
         return date.toLocaleString();
     }
 
-    const getGenres = () => {
-        axios.get('http://localhost:4941/api/v1/films/genres')
-            .then((response) => {
-                setErrorFlag(false)
-                setErrorMessage("")
-                setGenres(response.data)
-            }, (error) => {
-                setErrorFlag(true)
-                setErrorMessage(error.toString())
-            })
-    }
-
-    const getFilms = () => {
-        let q = searchTerm
-        let request
-        if (q === "") {
-             request = axios.get('http://localhost:4941/api/v1/films', {params: {
-                    genreIds: filterGenres,
-                    ageRatings: filterAgeRatings,
-                    sortBy: sort
-                }})
-        } else {
-             request = axios.get('http://localhost:4941/api/v1/films', {params: {
-                    q: searchTerm,
-                    genreIds: filterGenres,
-                    ageRatings: filterAgeRatings,
-                    sortBy: sort
-                }})
-        }
-        request.then((response) => {
-            setErrorFlag(false)
-            setErrorMessage("")
-            setFilms(response.data.films)
-            console.log(response.data)
-        }, (error) => {
-            setErrorFlag(true)
-            setErrorMessage(error.toString())
-        })
-
-        console.log("Genres", filterGenres)
-        console.log("Films", films)
-    }
-
     const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
         setPage(value);
     }
-    const film_rows = () => films.slice((page - 1) * filmsPerPage, page * filmsPerPage).map((film: Film) => <Grid key={film.filmId}><FilmListObject film={film} getGenre={getGenre} convertToDate={convertToDate}/></Grid>)
 
     const filterGenre = (event: SelectChangeEvent<typeof filterGenres>) => {
         const {
@@ -125,7 +75,6 @@ const FilmList = () => {
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value,
         );
-        console.log(value)
     };
 
     const filterAgeRating = (event: SelectChangeEvent<typeof ageRatings>) => {
@@ -136,13 +85,22 @@ const FilmList = () => {
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value,
         );
-        console.log(value)
     };
 
     const filterSort = (event: SelectChangeEvent) => {
         setSort(event.target.value);
     };
 
+
+    function filmError(): string {
+        const filmError = filmsError as Error | AxiosError
+        return "Error retrieving films: " + filmError.message
+    }
+
+    function genreError(): string {
+        const genreError = genresError as Error | AxiosError
+        return "Error retrieving genres: " + genreError.message
+    }
 
     return (
         <Grid container rowSpacing={2} sx={{m:2}}>
@@ -179,7 +137,7 @@ const FilmList = () => {
                             input={<OutlinedInput label="Genres" />}
                             MenuProps={MenuProps}
                         >
-                            {genres.map((genre) => (
+                            {genresStatus === "success" && genres?.map((genre: Genre) => (
                                 <MenuItem
                                     key={genre.genreId}
                                     value={genre.genreId}
@@ -234,15 +192,13 @@ const FilmList = () => {
                 </Grid>
             </Grid>
             <Grid container xs={12} spacing={6} display="flex" justifyContent="center"  alignItems="center" disableEqualOverflow>
-                {errorFlag?
-                    <Alert severity="error">
-                        <AlertTitle> Error </AlertTitle>
-                        { errorMessage }
-                    </Alert>: ""}
-                { film_rows() }
+                { filmsStatus === "loading" && <CircularProgress />}
+                { filmsStatus === "error" && <p>{filmError()}</p>}
+                { genresStatus === "error" && <p>{genreError()}</p>}
+                { filmsStatus === "success" && data.films?.slice((page - 1) * FILMS_PER_PAGE, page * FILMS_PER_PAGE).map((film: Film) => (<Grid key={film.filmId}><FilmListObject film={film} getGenre={getGenre} convertToDate={convertToDate}/></Grid>))}
             </Grid>
             <Grid xs={12} sx={{mt:3}} display="flex" justifyContent="center" alignItems="center">
-                <Pagination count={pageCount} page={page} onChange={handlePageChange}  />
+                { filmsStatus === "success" && <Pagination count={Math.ceil(data.count/FILMS_PER_PAGE)} page={page} onChange={handlePageChange} />}
             </Grid>
         </Grid>
     )
