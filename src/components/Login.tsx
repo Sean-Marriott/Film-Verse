@@ -10,34 +10,21 @@ import Box from '@mui/material/Box';
 import Grid from "@mui/material/Unstable_Grid2";
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import axios from "axios";
+import {login} from "../api/usersApi";
+import {useMutation} from "react-query";
 
 const Login = () => {
-    const [errorFlag, setErrorFlag] = React.useState(false)
-    const [errorMessage, setErrorMessage] = React.useState("")
-    // const [authToken, setAuthToken] = React.useState("")
-    // const [userId, setUserId] = React.useState(-1)
+    const mutation  = useMutation(login, {
+        onSuccess: (data) => {
+            console.log(data)
+        }
+    })
+
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        const submitData = JSON.stringify({
-            "email": data.get('email'),
-            "password": data.get('password'),
-        })
-        axios.post('http://localhost:4941/api/v1/users/login', submitData, {headers: {'Content-Type': 'application/json'}})
-            .then((response) => {
-                setErrorFlag(false)
-                setErrorMessage("")
-                // setAuthToken(response.data.token)
-                // setUserId(response.data.userId)
-                localStorage.setItem('authToken', response.data.token)
-                localStorage.setItem('userId', response.data.userId)
-            }, (error) => {
-                setErrorFlag(true)
-                setErrorMessage(error.toString())
-            })
+        const formData = new FormData(event.currentTarget);
+        mutation.mutate(formData)
     };
-
 
 
     return (

@@ -12,15 +12,20 @@ import Container from '@mui/material/Container';
 import {FormControl, InputAdornment, InputLabel, OutlinedInput} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
-import axios from "axios";
+import {useMutation} from "react-query";
+import {signup} from "../api/usersApi";
 
 interface ISignupForm {
     handleNext: () => void;
 }
 const SignupForm = (props: ISignupForm) => {
     const [showPassword, setShowPassword] = React.useState(false);
-    const [errorFlag, setErrorFlag] = React.useState(false)
-    const [errorMessage, setErrorMessage] = React.useState("")
+
+    const signupMutation  = useMutation(signup, {
+        onSuccess: (data) => {
+            console.log(data)
+        }
+    })
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
     const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -30,35 +35,7 @@ const SignupForm = (props: ISignupForm) => {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        console.log({
-            email: data.get('email'),
-            password: data.get('password'),
-            lastName: data.get('lastName'),
-            firstName: data.get('firstName')
-        });
-        const submitData = JSON.stringify({
-            "email": data.get('email'),
-            "password": data.get('password'),
-            lastName: data.get('lastName'),
-            firstName: data.get('firstName')
-        })
-
-        axios.post('http://localhost:4941/api/v1/users/register', submitData, {headers: {'Content-Type': 'application/json'}})
-            .then((response) => {
-                setErrorFlag(false)
-                setErrorMessage("")
-                // setAuthToken(response.data.token)
-                // setUserId(response.data.userId)
-                // localStorage.setItem('authToken', response.data.token)
-                // localStorage.setItem('userId', response.data.userId)
-                console.log(response)
-            }, (error) => {
-                setErrorFlag(true)
-                setErrorMessage(error.toString())
-            })
-        if (!errorFlag) {
-            props.handleNext();
-        }
+        signupMutation.mutate(data)
     };
 
     return (
