@@ -13,7 +13,10 @@ import {FormControl, InputAdornment, InputLabel, OutlinedInput} from "@mui/mater
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 
-const SignupForm = () => {
+interface ISignupForm {
+    handleNext: () => void;
+}
+const SignupForm = (props: ISignupForm) => {
     const [showPassword, setShowPassword] = React.useState(false);
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -29,6 +32,7 @@ const SignupForm = () => {
             email: data.get('email'),
             password: data.get('password'),
         });
+        props.handleNext();
     };
 
     return (

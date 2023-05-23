@@ -160,7 +160,7 @@ const Film = () => {
             return <CircularProgress />
         }
         if (page > pageCount) { setPage((page) => page-1) }
-        return similarFilms.slice((page - 1) * similarFilmsPerPage, page * similarFilmsPerPage).map((film: Film) => <SimilarFilmObject key={film.filmId} film={film} genres={genres}/>)
+        return similarFilms.slice((page - 1) * similarFilmsPerPage, page * similarFilmsPerPage).map((film: Film) => <SimilarFilmObject key={film.filmId} film={film} getGenre={getGenre} convertToDate={convertToDate}/>)
     }
 
     function getGenre(genreId: number): string {

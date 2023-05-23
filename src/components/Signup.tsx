@@ -98,7 +98,7 @@ const Signup = () => {
                 ) : (
                     <React.Fragment>
                         <Grid>
-                            {activeStep == 0 && <SignupForm />}
+                            {activeStep == 0 && <SignupForm handleNext={handleNext} />}
                             <Stack mt={3} direction="row">
                                 <Button
                                     color="inherit"
@@ -114,7 +114,10 @@ const Signup = () => {
                                         Skip
                                     </Button>
                                 )}
-                                <Button onClick={handleNext}>
+                                <Button
+                                    onClick={handleNext}
+                                    disabled={activeStep === 0}
+                                >
                                     {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
                                 </Button>
                             </Stack>

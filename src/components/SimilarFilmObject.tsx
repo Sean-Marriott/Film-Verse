@@ -9,25 +9,11 @@ import {Link} from "react-router-dom";
 
 interface ISimilarFilmObjectProps {
     film: Film
-    genres: Genre[]
+    getGenre: (genreId: number) => string
+    convertToDate: (dateString: string) => string
 }
-
 const SimilarFilmObject = (props: ISimilarFilmObjectProps) => {
     const [film] = React.useState(props.film)
-    const [genres] = React.useState(props.genres)
-
-    function getGenre(genreId: number): string {
-        for (const Genre of genres) {
-            if (Genre.genreId === genreId) { return Genre.name}
-        }
-        return "undefined"
-    }
-
-    function convertToDate(dateString: string): string {
-        const date = new Date(dateString);
-        return date.toLocaleString();
-    }
-
     return (
         <Grid>
             <Card sx={{ maxWidth: 200 }}>
@@ -45,9 +31,9 @@ const SimilarFilmObject = (props: ISimilarFilmObjectProps) => {
                     </Stack>
                     <Stack direction="row" alignItems="center">
                         <Chip icon={<StarRateIcon style={{ color: 'gold' }} />} label={film.rating} variant="outlined" />
-                        <Chip variant="outlined" label={getGenre(film.genreId)}></Chip>
+                        <Chip variant="outlined" label={props.getGenre(film.genreId)}></Chip>
                     </Stack>
-                    <Chip variant="outlined" label={convertToDate(film.releaseDate)}></Chip>
+                    <Chip variant="outlined" label={props.convertToDate(film.releaseDate)}></Chip>
                     <Chip
                         avatar={<Avatar alt="Director Profile Pic" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />}
                         label={film.directorFirstName + " " + film.directorLastName}

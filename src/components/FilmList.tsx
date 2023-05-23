@@ -57,6 +57,17 @@ const FilmList = () => {
         },
     };
 
+    function getGenre(genreId: number): string {
+        for (const Genre of genres) {
+            if (Genre.genreId === genreId) { return Genre.name }
+        }
+        return "undefined"
+    }
+
+    function convertToDate(dateString: string): string {
+        const date = new Date(dateString);
+        return date.toLocaleString();
+    }
 
     const getGenres = () => {
         axios.get('http://localhost:4941/api/v1/films/genres')
@@ -104,7 +115,7 @@ const FilmList = () => {
     const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
         setPage(value);
     }
-    const film_rows = () => films.slice((page - 1) * filmsPerPage, page * filmsPerPage).map((film: Film) => <Grid key={film.filmId}><FilmListObject film={film} genres={genres} /></Grid>)
+    const film_rows = () => films.slice((page - 1) * filmsPerPage, page * filmsPerPage).map((film: Film) => <Grid key={film.filmId}><FilmListObject film={film} getGenre={getGenre} convertToDate={convertToDate}/></Grid>)
 
     const filterGenre = (event: SelectChangeEvent<typeof filterGenres>) => {
         const {

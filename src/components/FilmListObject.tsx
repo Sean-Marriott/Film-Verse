@@ -8,26 +8,12 @@ import Typography from "@mui/material/Typography";
 import {Link} from "react-router-dom";
 
 interface IFilmListProps {
+    getGenre: (genreId: number) => string
+    convertToDate: (dateString: string) => string
     film: Film
-    genres: Array<Genre>
 }
-
-
-
 const FilmListObject = (props: IFilmListProps) => {
     const [film] = React.useState < Film > (props.film)
-    const [genres] = React.useState < Array < Genre >> (props.genres)
-    function getGenre(genreId: number): string {
-        for (const Genre of genres) {
-            if (Genre.genreId === genreId) { return Genre.name}
-        }
-        return "undefined"
-    }
-    function convertToDate(dateString: string): string {
-        const date = new Date(dateString);
-        return date.toLocaleString();
-    }
-
     return (
         <Card sx={{ maxWidth: 345 }}>
             <CardHeader
@@ -44,12 +30,12 @@ const FilmListObject = (props: IFilmListProps) => {
                     <Grid container>
                         <Grid xs={6}>
                             <Typography variant="body2" color="text.secondary">
-                                {getGenre(film.genreId)}
+                                {props.getGenre(film.genreId)}
                             </Typography>
                         </Grid>
                         <Grid xs={6} display="flex" justifyContent="right" alignItems="right">
                             <Typography variant="body2" color="text.secondary">
-                                {convertToDate(film.releaseDate)}
+                                {props.convertToDate(film.releaseDate)}
                             </Typography>
                         </Grid>
                         <Grid xs={6}>
