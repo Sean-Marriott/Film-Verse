@@ -15,8 +15,8 @@ import axios from "axios";
 const Login = () => {
     const [errorFlag, setErrorFlag] = React.useState(false)
     const [errorMessage, setErrorMessage] = React.useState("")
-    const [authToken, setAuthToken] = React.useState("")
-    const [userId, setUserId] = React.useState(-1)
+    // const [authToken, setAuthToken] = React.useState("")
+    // const [userId, setUserId] = React.useState(-1)
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -28,8 +28,10 @@ const Login = () => {
             .then((response) => {
                 setErrorFlag(false)
                 setErrorMessage("")
-                setAuthToken(response.data.token)
-                setUserId(response.data.userId)
+                // setAuthToken(response.data.token)
+                // setUserId(response.data.userId)
+                localStorage.setItem('authToken', response.data.token)
+                localStorage.setItem('userId', response.data.userId)
             }, (error) => {
                 setErrorFlag(true)
                 setErrorMessage(error.toString())

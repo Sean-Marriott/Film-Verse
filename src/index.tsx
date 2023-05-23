@@ -7,6 +7,7 @@ import Film from "./components/Film";
 import Navbar from "./components/Navbar";
 import FilmList from "./components/FilmList";
 import Login from "./components/Login";
+import Signup from "./components/Signup";
 
 
 const root = ReactDOM.createRoot(
@@ -18,6 +19,7 @@ root.render(
         <Router>
             <div>
                 <Routes>
+                    <Route path="/signup" element={<Signup/>}></Route>
                     <Route path="/login" element={<Login/>}></Route>
                     <Route path="/films" element={<FilmList/>}/>
                     <Route path="/film/:id" element={<Film/>}/>
