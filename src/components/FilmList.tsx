@@ -25,10 +25,7 @@ const FilmList = () => {
     const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
     const { data, status: filmsStatus, error: filmsError } = useQuery(
         ['films', searchTerm, sort, filterGenres, filterAgeRatings],
-        () => getFilmsParametrised(searchTerm, filterGenres, filterAgeRatings, sort))
-
-    React.useEffect(() => {
-    }, [])
+        () => getFilmsParametrised(searchTerm, filterGenres, filterAgeRatings, sort, ""))
 
     const ageRatings = [
         "G",
@@ -52,8 +49,10 @@ const FilmList = () => {
     };
 
     function getGenre(genreId: number): string {
-        for (const Genre of genres) {
-            if (Genre.genreId === genreId) { return Genre.name }
+        if (genresStatus === "success") {
+            for (const Genre of genres) {
+                if (Genre.genreId === genreId) { return Genre.name}
+            }
         }
         return "undefined"
     }
@@ -185,7 +184,7 @@ const FilmList = () => {
                         <MenuItem value={"RELEASED_DESC"}>Release Date Descending</MenuItem>
                         <MenuItem value={"ALPHABETICAL_ASC"}>Alphabetically Ascending</MenuItem>
                         <MenuItem value={"ALPHABETICAL_DESC"}>Alphabetically Descending</MenuItem>
-                        <MenuItem value={"RATING ASC"}>Rating Ascending</MenuItem>
+                        <MenuItem value={"RATING_ASC"}>Rating Ascending</MenuItem>
                         <MenuItem value={"RATING_DESC"}>Rating Descending</MenuItem>
                     </Select>
                 </FormControl>

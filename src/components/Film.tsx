@@ -1,9 +1,7 @@
-import axios, {AxiosError} from 'axios';
+import {AxiosError} from 'axios';
 import {useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import {
-    Alert,
-    AlertTitle,
     Avatar,
     Chip,
     CircularProgress, Pagination,
@@ -19,6 +17,8 @@ import CardMedia from "@mui/material/CardMedia";
 import Box from "@mui/material/Box";
 import ReviewObject from "./ReviewObject";
 import SimilarFilmObject from"./SimilarFilmObject"
+import {useQuery} from "react-query";
+import {getFilm, getFilmsParametrised, getGenres, getReviews} from "../api/filmsApi";
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -68,86 +68,66 @@ function TabPanel(props: TabPanelProps) {
 
 const Film = () => {
     const { id } = useParams<{ id: string }>();
-    const [film, setFilm] = React.useState <Film>()
-    const [similarFilms, setSimilarFilms] = React.useState <Film[]>([])
-    const [genres, setGenres] = React.useState <Genre[]> ([])
-    const [reviews, setReviews] = React.useState <Review[]> ([])
-    const [errorFlag, setErrorFlag] = React.useState(false);
-    const [errorMessage, setErrorMessage] = React.useState("");
     const [tab, setTab] = React.useState(1);
     const [page, setPage] = useState(1);
-    const [isLoading, setIsLoading] = useState(true);
     const similarFilmsPerPage = useWindowSize();
-    const pageCount = Math.ceil(similarFilms.length / similarFilmsPerPage)
+    const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
+    const { data: film, status: filmStatus, error: filmError  } = useQuery(['film', id], () => getFilm(id? id:"-1"))
+    const { data: reviews, status: reviewStatus, error: reviewError } = useQuery(['reviews', id], () => getReviews(id? id:"-1"))
+    const { data: similarFilmGenreId, status: similarFilmGenreIdStatus, error:similarFilmGenreIdError } = useQuery(['similarFilmGenreId', id], () => getFilmsParametrised("", film.genreId, [], "RELEASED_ASC", ""), {
+        select: (data) => data.films,
+        enabled: !!film})
+    const { data: similarFilmDirectorId, status: similarFilmDirectorIdStatus, error:similarFilmDirectorIdError } = useQuery(['similarFilmDirectorId', id], () => getFilmsParametrised("", [], [], "RELEASED_ASC", film.directorId), {
+        select: (data) => data.films,
+        enabled: !!film})
 
+    if (genresStatus === "loading" || filmStatus === "loading" || reviewStatus === "loading" || similarFilmGenreIdStatus === "loading" || similarFilmDirectorIdStatus === "loading") {
+        return <Grid container mt={8} justifyContent="center"><CircularProgress/></Grid>
+    }
 
-    React.useEffect(() => {
-        void fetchData()
-        getGenres()
-        getReviews()
-    }, [id])
+    if (filmStatus === "error") {
+        const error = filmError as Error | AxiosError
+        return <Grid container mt={8} justifyContent="center"><Typography variant="h4">{"Error retrieving films: " + error.message}</Typography></Grid>
+    }
 
+    if (genresStatus === "error") {
+        const error = genresError as Error | AxiosError
+        return <Grid container mt={8} justifyContent="center"><Typography variant="h4">{"Error retrieving genres: " + error.message}</Typography></Grid>
+    }
 
-    async function fetchData() {
-        try {
-            const response1 = await axios.get('http://localhost:4941/api/v1/films/' + id)
-            setFilm(response1.data)
+    if (reviewStatus === "error") {
+        const error = reviewError as Error | AxiosError
+        return <Grid container mt={8} justifyContent="center"><Typography variant="h4">{"Error retrieving genres: " + error.message}</Typography></Grid>
+    }
 
-            const response2 = await axios.get('http://localhost:4941/api/v1/films/', {params: {genreIds: response1.data["genreId"]}})
-            const response3 = await axios.get('http://localhost:4941/api/v1/films/', {params: {directorId: parseInt(response1.data["directorId"])}})
-            const filmsByGenreId: Film[] = response2.data.films
-            const filmsByDirectorId: Film[] = response3.data.films
+    if (similarFilmGenreIdStatus === "error") {
+        const error = similarFilmGenreIdError as Error | AxiosError
+        return <Grid container mt={8} justifyContent="center"><Typography variant="h4">{"Error retrieving genres: " + error.message}</Typography></Grid>
+    }
 
-            const similarFilmsIds: number[] = [parseInt(id as string)]
-            const similarFilms: Film[] = []
+    if (similarFilmDirectorIdStatus === "error") {
+        const error = similarFilmDirectorIdError as Error | AxiosError
+        return <Grid container mt={8} justifyContent="center"><Typography variant="h4">{"Error retrieving genres: " + error.message}</Typography></Grid>
+    }
 
-            for (let i = 0; i < filmsByGenreId.length; i++) {
-                if (!similarFilmsIds.includes(filmsByGenreId[i].filmId)) {
-                    similarFilms.push(filmsByGenreId[i])
-                    similarFilmsIds.push(filmsByGenreId[i].filmId)
-                }
-            }
-            for (let i = 0; i < filmsByDirectorId.length; i++) {
-                if (!similarFilmsIds.includes(filmsByDirectorId[i].filmId)) {
-                    similarFilms.push(filmsByDirectorId[i])
-                    similarFilmsIds.push(filmsByDirectorId[i].filmId)
-                }
-            }
-            setSimilarFilms(similarFilms)
-        } catch(err) {
-            const errors = err as Error | AxiosError
-            setErrorFlag(true)
-            setErrorMessage(errors.toString())
-        } finally {
-            setIsLoading(false)
+    const similarFilmIds: number[] = [parseInt(id as string)]
+    const similarFilms: Film[] = []
+
+    for (let i = 0; i < similarFilmGenreId.length; i++) {
+        if(!similarFilmIds.includes(similarFilmGenreId[i].filmId)) {
+            similarFilms.push(similarFilmGenreId[i])
+            similarFilmIds.push(similarFilmGenreId[i].filmId)
         }
     }
 
-    const getGenres = () => {
-        console.log("Getting Genres")
-        axios.get('http://localhost:4941/api/v1/films/genres')
-            .then((response) => {
-                setErrorFlag(false)
-                setErrorMessage("")
-                setGenres(response.data)
-            }, (error) => {
-                setErrorFlag(true)
-                setErrorMessage(error.toString())
-            })
+    for (let i=0; i < similarFilmDirectorId.length; i++) {
+        if(!similarFilmIds.includes(similarFilmDirectorId[i].filmId)) {
+            similarFilms.push(similarFilmDirectorId[i])
+            similarFilmIds.push(similarFilmDirectorId[i].filmId)
+        }
     }
 
-    const getReviews = () => {
-        console.log("Getting Reviews")
-        axios.get('http://localhost:4941/api/v1/films/' + id + '/reviews')
-            .then((response) => {
-                setErrorFlag(false)
-                setErrorMessage("")
-                setReviews(response.data)
-            }, (error) => {
-                setErrorFlag(true)
-                setErrorMessage(error.toString())
-            })
-    }
+    const pageCount = Math.ceil(similarFilms.length / similarFilmsPerPage)
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTab(newValue);
@@ -155,17 +135,16 @@ const Film = () => {
 
     const review_rows = () => reviews.map((review: Review) => <ReviewObject key={review.reviewerId + review.timestamp} review={review}/>)
     const similar_film_rows = () => {
-        console.log(page, pageCount)
-        if (isLoading) {
-            return <CircularProgress />
-        }
         if (page > pageCount) { setPage((page) => page-1) }
+        console.log(similarFilms.slice((page - 1) * similarFilmsPerPage, page * similarFilmsPerPage))
         return similarFilms.slice((page - 1) * similarFilmsPerPage, page * similarFilmsPerPage).map((film: Film) => <SimilarFilmObject key={film.filmId} film={film} getGenre={getGenre} convertToDate={convertToDate}/>)
     }
 
     function getGenre(genreId: number): string {
-        for (const Genre of genres) {
-            if (Genre.genreId === genreId) { return Genre.name}
+        if (genresStatus === "success") {
+            for (const Genre of genres) {
+                if (Genre.genreId === genreId) { return Genre.name}
+            }
         }
         return "undefined"
     }
@@ -179,97 +158,84 @@ const Film = () => {
         setPage(value);
     }
 
-    if (!film) {
-        return(
-            <Grid container >
-                <Grid xs={12} display="flex" justifyContent="center" alignItems="center">
-                    <CircularProgress />
-                </Grid>
-            </Grid>
-        )
-    } else {
-        return (
-            <Grid container display="flex" justifyContent="center"  alignItems="center">
-                <Grid xs={12} sx={{m:6, ml:10, mr:10}}>
-                    {errorFlag?
-                        <Alert severity="error">
-                            <AlertTitle> Error </AlertTitle>
-                            { errorMessage }
-                        </Alert>: ""}
-                    <Paper elevation={3}>
-                        <Grid container >
-                            <Grid sm={12} md={6} sx={{p:2}}>
-                                <CardMedia
-                                    component="img"
-                                    height="500"
-                                    src={"http://localhost:4941/api/v1/films/" + film.filmId +"/image"}
-                                    alt="Film Hero Image"
-                                    sx={{ objectFit: "fill" }}
-                                />
-                            </Grid>
-                            <Grid container display="flex" direction="column" rowSpacing={2} sm={12} md={6} sx={{p:2}}>
-                                <Grid xs={12} sx={{borderBottom:1}}>
-                                    <Typography variant="h4">{film.title}</Typography>
-                                    <Typography variant="subtitle2">{convertToDate(film.releaseDate)}</Typography>
-                                </Grid>
-                                <Grid xs={12}>
-                                    <Tabs
-                                        value={tab}
-                                        onChange={handleTabChange}
-
-                                        textColor="secondary"
-                                        indicatorColor="secondary"
-                                    >
-                                        <Tab value={1} label="Overview" />
-                                        <Tab value={2} label="Reviews" />
-                                        <Tab value={3} label="Similar Films" />
-                                    </Tabs>
-                                </Grid>
-                                <TabPanel value={tab} index={1}>
-                                    <Grid container direction="column" sx={{p:1}} rowSpacing={2}>
-                                        <Grid xs={12} container>
-                                            <Grid>
-                                                <Stack spacing={1} direction="row" alignItems="center">
-                                                    <Chip label={getGenre(film.genreId)} variant="outlined" />
-                                                    <Rating max={10} name="half-rating-read" defaultValue={film.rating} precision={0.5} readOnly />
-                                                </Stack>
-                                            </Grid>
-                                        </Grid>
-                                        <Grid xs={12}>
-                                            <Typography variant="body1">{film.description}</Typography>
-                                        </Grid>
-                                        <Grid xs={12} sx={{p:0}} display="flex" alignItems="center" justifyContent="end">
-                                            <Grid sx={{mr:2}}>
-                                                <Typography variant="body1">{film.directorFirstName + " " + film.directorLastName}</Typography>
-                                            </Grid>
-                                            <Grid>
-                                                <Avatar alt="Director Profile Pic" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
-                                            </Grid>
-                                        </Grid>
-                                    </Grid>
-                                </TabPanel>
-                                <TabPanel value={tab} index={2}>
-                                    <Grid container direction="column" spacing={1} sx={{flexWrap:"nowrap", overflow:"auto", maxHeight:400}}>
-                                        {review_rows()}
-                                    </Grid>
-                                </TabPanel>
-                                <TabPanel value={tab} index={3}>
-                                    <Grid container spacing={2} >
-                                        <Grid xs={12} container justifyContent="center">
-                                            {similar_film_rows()}
-                                        </Grid>
-                                        <Grid xs={12} container justifyContent="center">
-                                            <Pagination count={pageCount} page={page} onChange={handlePageChange}  />
-                                        </Grid>
-                                    </Grid>
-                                </TabPanel>
-                            </Grid>
+    return (
+        <Grid container display="flex" justifyContent="center"  alignItems="center">
+            <Grid xs={12} sx={{m:6, ml:10, mr:10}}>
+                <Paper elevation={3}>
+                    <Grid container >
+                        <Grid sm={12} md={6} sx={{p:2}}>
+                            <CardMedia
+                                component="img"
+                                height="500"
+                                src={"http://localhost:4941/api/v1/films/" + film.filmId +"/image"}
+                                alt="Film Hero Image"
+                                sx={{ objectFit: "fill" }}
+                            />
                         </Grid>
-                    </Paper>
-                </Grid>
+                        <Grid container display="flex" direction="column" rowSpacing={2} sm={12} md={6} sx={{p:2}}>
+                            <Grid xs={12} sx={{borderBottom:1}}>
+                                <Typography variant="h4">{film.title}</Typography>
+                                <Typography variant="subtitle2">{convertToDate(film.releaseDate)}</Typography>
+                            </Grid>
+                            <Grid xs={12}>
+                                <Tabs
+                                    value={tab}
+                                    onChange={handleTabChange}
+
+                                    textColor="secondary"
+                                    indicatorColor="secondary"
+                                >
+                                    <Tab value={1} label="Overview" />
+                                    <Tab value={2} label="Reviews" />
+                                    <Tab value={3} label="Similar Films" />
+                                </Tabs>
+                            </Grid>
+                            <TabPanel value={tab} index={1}>
+                                <Grid container direction="column" sx={{p:1}} rowSpacing={2}>
+                                    <Grid xs={12} container>
+                                        <Grid>
+                                            <Stack spacing={1} direction="row" alignItems="center">
+                                                <Chip label={getGenre(film.genreId)} variant="outlined" />
+                                                <Rating max={10} name="half-rating-read" defaultValue={film.rating} precision={0.5} readOnly />
+                                            </Stack>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid xs={12}>
+                                        <Typography variant="body1">{film.description}</Typography>
+                                    </Grid>
+                                    <Grid xs={12} sx={{p:0}} display="flex" alignItems="center" justifyContent="end">
+                                        <Grid sx={{mr:2}}>
+                                            <Typography variant="body1">{film.directorFirstName + " " + film.directorLastName}</Typography>
+                                        </Grid>
+                                        <Grid>
+                                            <Avatar alt="Director Profile Pic" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </TabPanel>
+                            <TabPanel value={tab} index={2}>
+                                <Grid container direction="column" spacing={1} sx={{flexWrap:"nowrap", overflow:"auto", maxHeight:400}}>
+                                    {reviews.length === 0 && <Typography m={3} variant="body1">No reviews to show</Typography>}
+                                    {review_rows()}
+                                </Grid>
+                            </TabPanel>
+                            <TabPanel value={tab} index={3}>
+                                <Grid container spacing={2} >
+                                    <Grid xs={12} container justifyContent="center">
+                                        {similar_film_rows()}
+                                    </Grid>
+                                    <Grid xs={12} container justifyContent="center">
+                                        <Pagination count={pageCount} page={page} onChange={handlePageChange}  />
+                                    </Grid>
+                                </Grid>
+                            </TabPanel>
+                        </Grid>
+                    </Grid>
+                </Paper>
             </Grid>
-        )
-    }
+        </Grid>
+    )
+
 }
 
 export default Film;
