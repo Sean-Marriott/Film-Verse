@@ -57,6 +57,10 @@ const AddFilmForm = (props: IAddFilmForm) => {
         setAxiosError("")
         const formData = new FormData(event.currentTarget)
         if (validateData()) {
+            const hours = runtime?.hour() || 0
+            const minutes = runtime?.minute() || 0
+            const totalTime = (hours * 60) + minutes
+            if (totalTime > 0) {formData.set("runtime", totalTime.toString())}
             props.setFilmData(formData)
             props.handleNext()
         }
@@ -195,6 +199,7 @@ const AddFilmForm = (props: IAddFilmForm) => {
                         <Grid item xs={12} sm={6}>
                             <FormControl fullWidth>
                                 <DateTimePicker
+                                    slotProps={{textField: {name: "releaseDate", id:"releaseDate"}}}
                                     label="Release Date"
                                     value={releaseDate}
                                     onChange={(newValue) => setReleaseDate(newValue)}
@@ -203,6 +208,8 @@ const AddFilmForm = (props: IAddFilmForm) => {
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <TimeField
+                                name="runtime"
+                                id="runtime"
                                 label="Runtime"
                                 value={runtime}
                                 onChange={(newValue) => setRuntime(newValue)}

@@ -48,7 +48,7 @@ export const addFilm = async (formData: FormData) => {
         description: formData.get('description'),
         releaseDate: formData.get('releaseDate')? formData.get('releaseDate'):undefined,
         genreId: parseInt(formData.get('genre') as string),
-        runtime: formData.get('runtime')? formData.get('runtime'):undefined,
+        runtime: formData.get('runtime')? parseInt(formData.get('runtime') as string):undefined,
         ageRating: formData.get('ageRating')? formData.get('ageRating'):undefined
     })
     console.log(submitData)
