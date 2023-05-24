@@ -2,8 +2,6 @@ import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
@@ -24,8 +22,8 @@ const Login = () => {
     const [axiosError, setAxiosError] = useState("")
 
     const mutation  = useMutation(login, {
-        onSuccess: (data) => {
-            console.log(data.status)
+        onSuccess: () => {
+            console.log("SUCCESS")
         },
         onError: (error: AxiosError) => {
             if (error.response?.status === 401) {
@@ -39,27 +37,30 @@ const Login = () => {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
+        validateFields()
+        setAxiosError("")
         if (validateFields()) {
             mutation.mutate(formData)
         }
     };
 
     function validateFields(): boolean{
+        let valid = true
         setEmailAddressErrorMessage("")
         setPasswordErrorMessage("")
         const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
 
         if (!emailRegex.test(emailAddress) || emailAddress === "") {
             setEmailAddressErrorMessage("Please enter a valid email address")
-            return false
+            valid = false
         }
 
         if (!(password.length >= 6)) {
             setPasswordErrorMessage("Password must be at least 6 characters")
-            return false
+            valid = false
         }
 
-        return true
+        return valid
     }
 
 
@@ -118,10 +119,6 @@ const Login = () => {
                             type="password"
                             id="password"
                             autoComplete="current-password"
-                        />
-                        <FormControlLabel
-                            control={<Checkbox value="remember" color="primary" />}
-                            label="Remember me"
                         />
                         {axiosError !== "" && <Grid><Typography component="h1" variant="h5"><Alert severity="error">{axiosError}</Alert></Typography></Grid>}
                         <Button
