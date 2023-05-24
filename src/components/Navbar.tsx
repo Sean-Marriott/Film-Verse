@@ -21,19 +21,23 @@ import {AxiosError} from "axios";
 
 const Navbar = () => {
     const [axiosError, setAxiosError] = React.useState("")
-    const [open, setOpen] = React.useState(false)
+    const [openErrorSnackbar, setOpenErrorSnackbar] = React.useState(false)
+    const [openLogoutSnackbar, setOpenLogoutSnackbar] = React.useState(false)
     const navigate = useNavigate()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
         React.useState<null | HTMLElement>(null);
     const { refetch } = useQuery ('logout', logout, {enabled: false,
-        onSettled: () => {
-            localStorage.removeItem('authToken')
-            localStorage.removeItem('userId')
+        onSuccess: () => {
+            setOpenLogoutSnackbar(true)
         },
         onError: (error: AxiosError) => {
             setAxiosError("Please log in again: " + error.message)
-            setOpen(true)
+            setOpenErrorSnackbar(true)
+        },
+        onSettled: () => {
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('userId')
         }})
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -78,8 +82,12 @@ const Navbar = () => {
         handleMenuClose()
         navigate('/signup')
     }
-    const handleClose = () => {
-        setOpen(false)
+    const handleCloseErrorSnackbar = () => {
+        setOpenErrorSnackbar(false)
+    };
+
+    const handleCloseLogoutSnackbar = () => {
+        setOpenLogoutSnackbar(false)
     };
 
     const menuId = 'primary-search-account-menu';
@@ -162,11 +170,18 @@ const Navbar = () => {
     return (
         <Box sx={{ flexGrow: 1 }}>
 
-            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose} anchorOrigin={{ vertical:"bottom", horizontal:"left" }}>
-                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+            <Snackbar open={openErrorSnackbar} autoHideDuration={6000} onClose={handleCloseErrorSnackbar} anchorOrigin={{ vertical:"bottom", horizontal:"left" }}>
+                <Alert onClose={handleCloseErrorSnackbar} severity="error" sx={{ width: '100%' }}>
                     {axiosError}
                 </Alert>
             </Snackbar>
+
+            <Snackbar open={openLogoutSnackbar} autoHideDuration={6000} onClose={handleCloseLogoutSnackbar} anchorOrigin={{ vertical:"bottom", horizontal:"left" }}>
+                <Alert onClose={handleCloseLogoutSnackbar} severity="info" sx={{ width: '100%' }}>
+                    Successfully logged out
+                </Alert>
+            </Snackbar>
+
             <AppBar position="static">
                 <Toolbar>
                     <IconButton
