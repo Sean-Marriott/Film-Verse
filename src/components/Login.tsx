@@ -12,19 +12,55 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import {login} from "../api/usersApi";
 import {useMutation} from "react-query";
+import {useState} from "react";
+import {AxiosError} from "axios";
+import {Alert} from "@mui/material";
 
 const Login = () => {
+    const [emailAddress, setEmailAddress] = useState("");
+    const [emailAddressErrorMessage, setEmailAddressErrorMessage] = useState("")
+    const [password, setPassword] = useState("");
+    const [passwordErrorMessage, setPasswordErrorMessage] = useState("")
+    const [axiosError, setAxiosError] = useState("")
+
     const mutation  = useMutation(login, {
         onSuccess: (data) => {
-            console.log(data)
-        }
+            console.log(data.status)
+        },
+        onError: (error: AxiosError) => {
+            if (error.response?.status === 401) {
+                setAxiosError("Incorrect email/password")
+            } else {
+                setAxiosError(error.message)
+            }
+        },
     })
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        mutation.mutate(formData)
+        if (validateFields()) {
+            mutation.mutate(formData)
+        }
     };
+
+    function validateFields(): boolean{
+        setEmailAddressErrorMessage("")
+        setPasswordErrorMessage("")
+        const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
+
+        if (!emailRegex.test(emailAddress) || emailAddress === "") {
+            setEmailAddressErrorMessage("Please enter a valid email address")
+            return false
+        }
+
+        if (!(password.length >= 6)) {
+            setPasswordErrorMessage("Password must be at least 6 characters")
+            return false
+        }
+
+        return true
+    }
 
 
     return (
@@ -59,19 +95,25 @@ const Login = () => {
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
                         <TextField
                             margin="normal"
+                            onChange={(e) => setEmailAddress(e.target.value)}
                             required
                             fullWidth
                             id="email"
                             label="Email Address"
                             name="email"
+                            error = {emailAddressErrorMessage !== ""}
+                            helperText={emailAddressErrorMessage}
                             autoComplete="email"
                             autoFocus
                         />
                         <TextField
                             margin="normal"
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                             fullWidth
                             name="password"
+                            error = {passwordErrorMessage !== ""}
+                            helperText={passwordErrorMessage}
                             label="Password"
                             type="password"
                             id="password"
@@ -81,6 +123,7 @@ const Login = () => {
                             control={<Checkbox value="remember" color="primary" />}
                             label="Remember me"
                         />
+                        {axiosError !== "" && <Grid><Typography component="h1" variant="h5"><Alert severity="error">{axiosError}</Alert></Typography></Grid>}
                         <Button
                             type="submit"
                             fullWidth
