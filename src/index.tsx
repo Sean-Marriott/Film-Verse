@@ -20,8 +20,8 @@ const queryClient = new QueryClient()
 root.render(
     <div className="App">
         <QueryClientProvider client={queryClient}>
-            <Navbar />
             <Router>
+                <Navbar />
                 <div>
                     <Routes>
                         <Route path="/signup" element={<Signup/>}></Route>

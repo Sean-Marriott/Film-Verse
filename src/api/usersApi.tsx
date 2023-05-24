@@ -29,3 +29,12 @@ export const signup = async (formData: FormData) => {
     localStorage.setItem('userId', response.data.userId)
     return response.data
 }
+
+export const logout = async () => {
+    const authtoken = localStorage.getItem('authToken')
+
+    if (authtoken) {
+        const response = await usersApi.post("/logout", {}, {headers: {'X-Authorization': authtoken}})
+        return response.data
+    }
+}

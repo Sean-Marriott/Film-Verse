@@ -12,17 +12,36 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
-import {Link} from "@mui/material";
+import {Alert, Link, Snackbar} from "@mui/material";
+import {useQuery} from "react-query";
+import {logout} from "../api/usersApi";
+import {useNavigate} from "react-router-dom";
+import {AxiosError} from "axios";
 
 
 const Navbar = () => {
+    const [axiosError, setAxiosError] = React.useState("")
+    const [open, setOpen] = React.useState(false)
+    const navigate = useNavigate()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
         React.useState<null | HTMLElement>(null);
-
+    const { refetch } = useQuery ('logout', logout, {enabled: false,
+        onSettled: () => {
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('userId')
+        },
+        onError: (error: AxiosError) => {
+            setAxiosError("Please log in again: " + error.message)
+            setOpen(true)
+        }})
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
+    function isLoggedIn(): boolean {
+        const userId = localStorage.getItem('userId')
+        return (userId !== null)
+    }
 
     const Logo = () => {
         return <img width="90" src="/logo.png" alt="filmVerse logo"/>
@@ -45,6 +64,24 @@ const Navbar = () => {
         setMobileMoreAnchorEl(event.currentTarget);
     };
 
+    const handleLogOut = () => {
+        handleMenuClose()
+        void refetch()
+    }
+
+    const handleLogin = () => {
+        handleMenuClose()
+        navigate('/login')
+    }
+
+    const handleSignup = () => {
+        handleMenuClose()
+        navigate('/signup')
+    }
+    const handleClose = () => {
+        setOpen(false)
+    };
+
     const menuId = 'primary-search-account-menu';
     const renderMenu = (
         <Menu
@@ -62,8 +99,11 @@ const Navbar = () => {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-            <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+            { isLoggedIn() && <MenuItem onClick={handleMenuClose}>Profile</MenuItem>}
+            { isLoggedIn() && <MenuItem onClick={handleLogOut}>Log Out</MenuItem>}
+            { !isLoggedIn() && <MenuItem onClick={handleLogin}>Log in</MenuItem>}
+            { !isLoggedIn() && <MenuItem onClick={handleSignup}>Sign up</MenuItem>}
+
         </Menu>
     );
 
@@ -121,6 +161,12 @@ const Navbar = () => {
 
     return (
         <Box sx={{ flexGrow: 1 }}>
+
+            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose} anchorOrigin={{ vertical:"bottom", horizontal:"left" }}>
+                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                    {axiosError}
+                </Alert>
+            </Snackbar>
             <AppBar position="static">
                 <Toolbar>
                     <IconButton
@@ -136,7 +182,7 @@ const Navbar = () => {
                         <Logo />
                     </Link>
                     <Typography
-                        variant="h6"
+                        variant="h4"
                         noWrap
                         component="div"
                         sx={{ display: { xs: 'none', sm: 'block' } }}
@@ -194,6 +240,7 @@ const Navbar = () => {
             {renderMobileMenu}
             {renderMenu}
         </Box>
+
     );
 }
 
