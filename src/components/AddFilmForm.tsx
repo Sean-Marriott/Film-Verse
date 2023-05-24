@@ -33,7 +33,7 @@ const AddFilmForm = (props: IAddFilmForm) => {
     const [description, setDescription] = React.useState("")
     const [genre, setGenre] = React.useState("")
     const [ageRating, setAgeRating] = React.useState("TBC")
-    const [releaseDate, setReleaseDate] = React.useState(null)
+    const [releaseDate, setReleaseDate] = React.useState<Dayjs | null>(null)
     const [runtime, setRuntime] = React.useState<Dayjs | null>(null)
     const [filmTitleError, setFilmTitleError] = React.useState(false)
     const [descriptionError, setDescriptionError] = React.useState(false)
@@ -57,6 +57,11 @@ const AddFilmForm = (props: IAddFilmForm) => {
         setAxiosError("")
         const formData = new FormData(event.currentTarget)
         if (validateData()) {
+            const releaseDateAsIsoString = releaseDate?.format('YYYY-MM-DD HH:mm:ss')
+            if (releaseDateAsIsoString) {
+                formData.set("releaseDate", releaseDateAsIsoString)
+                console.log(formData.get("releaseDate"))
+            }
             const hours = runtime?.hour() || 0
             const minutes = runtime?.minute() || 0
             const totalTime = (hours * 60) + minutes
