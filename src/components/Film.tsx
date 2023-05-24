@@ -222,11 +222,10 @@ const Film = () => {
                             <TabPanel value={tab} index={3}>
                                 <Grid container spacing={2} >
                                     <Grid xs={12} container justifyContent="center">
+                                        {similarFilms.length === 0 && <Typography m={3} variant="body1">No similar films to show</Typography>}
                                         {similar_film_rows()}
                                     </Grid>
-                                    <Grid xs={12} container justifyContent="center">
-                                        <Pagination count={pageCount} page={page} onChange={handlePageChange}  />
-                                    </Grid>
+                                    {similarFilms.length > 0 && <Grid xs={12} container justifyContent="center"><Pagination count={pageCount} page={page} onChange={handlePageChange}  /></Grid>}
                                 </Grid>
                             </TabPanel>
                         </Grid>

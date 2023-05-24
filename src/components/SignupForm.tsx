@@ -43,7 +43,6 @@ const SignupForm = (props: ISignupForm) => {
                 setAxiosError(error.message)
             }
         },
-
     })
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
