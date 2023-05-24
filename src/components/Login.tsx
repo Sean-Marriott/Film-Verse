@@ -13,8 +13,10 @@ import {useMutation} from "react-query";
 import {useState} from "react";
 import {AxiosError} from "axios";
 import {Alert} from "@mui/material";
+import {useNavigate} from "react-router-dom";
 
 const Login = () => {
+    const navigate = useNavigate()
     const [emailAddress, setEmailAddress] = useState("");
     const [emailAddressErrorMessage, setEmailAddressErrorMessage] = useState("")
     const [password, setPassword] = useState("");
@@ -24,6 +26,7 @@ const Login = () => {
     const mutation  = useMutation(login, {
         onSuccess: () => {
             console.log("SUCCESS")
+            navigate('/films')
         },
         onError: (error: AxiosError) => {
             if (error.response?.status === 401) {
@@ -48,7 +51,7 @@ const Login = () => {
         let valid = true
         setEmailAddressErrorMessage("")
         setPasswordErrorMessage("")
-        const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
+        const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
 
         if (!emailRegex.test(emailAddress) || emailAddress === "") {
             setEmailAddressErrorMessage("Please enter a valid email address")
@@ -130,13 +133,8 @@ const Login = () => {
                             Sign In
                         </Button>
                         <Grid container>
-                            <Grid xs>
-                                <Link href="#" variant="body2">
-                                    Forgot password?
-                                </Link>
-                            </Grid>
-                            <Grid>
-                                <Link href="#" variant="body2">
+                            <Grid xs = {12} container sx={{justifyContent: 'flex-end' }}>
+                                <Link href="/signup" variant="body2">
                                     {"Don't have an account? Sign Up"}
                                 </Link>
                             </Grid>

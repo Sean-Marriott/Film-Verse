@@ -9,22 +9,41 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import {FormControl, InputAdornment, InputLabel, OutlinedInput} from "@mui/material";
+import {Alert, FormControl, FormHelperText, InputAdornment, InputLabel, OutlinedInput} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 import {useMutation} from "react-query";
 import {signup} from "../api/usersApi";
+import {AxiosError} from "axios";
+import {useState} from "react";
 
 interface ISignupForm {
     handleNext: () => void;
 }
 const SignupForm = (props: ISignupForm) => {
     const [showPassword, setShowPassword] = React.useState(false);
+    const [firstName, setFirstName] = React.useState("")
+    const [lastName, setLastName] = React.useState("")
+    const [email, setEmail] = React.useState("")
+    const [password, setPassword] = React.useState("")
+    const [firstNameError, setFirstNameError] = React.useState(false)
+    const [lastNameError, setLastNameError] = React.useState(false)
+    const [emailError, setEmailError] = React.useState(false)
+    const [passwordError, setPasswordError] = React.useState(false)
+    const [axiosError, setAxiosError] = useState("")
 
     const signupMutation  = useMutation(signup, {
-        onSuccess: (data) => {
-            console.log(data)
-        }
+        onSuccess: () => {
+            props.handleNext()
+        },
+        onError: (error: AxiosError) => {
+            if (error.response?.status === 403) {
+                setAxiosError("Email already in use")
+            } else {
+                setAxiosError(error.message)
+            }
+        },
+
     })
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -34,9 +53,42 @@ const SignupForm = (props: ISignupForm) => {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        signupMutation.mutate(data)
+        setAxiosError("")
+        if (validateData()) {
+            signupMutation.mutate(new FormData(event.currentTarget))
+        }
     };
+
+    function validateData() {
+        let valid = true
+        setFirstNameError(false)
+        setLastNameError(false)
+        setEmailError(false)
+        setPasswordError(false)
+        const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
+
+        if (firstName === "") {
+            setFirstNameError(true)
+            valid = false
+        }
+
+        if (lastName === "") {
+            setLastNameError(true)
+            valid = false
+        }
+
+        if (email === "" || !emailRegex.test(email)) {
+            setEmailError(true)
+            valid = false
+        }
+
+        if (password === "" || password.length < 6) {
+            setPasswordError(true)
+            valid = false
+        }
+
+        return valid
+    }
 
     return (
         <Container component="main" maxWidth="xs">
@@ -55,12 +107,15 @@ const SignupForm = (props: ISignupForm) => {
                 <Typography component="h1" variant="h5">
                     Sign up
                 </Typography>
-                <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+                <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 autoComplete="given-name"
                                 name="firstName"
+                                onChange={(e) => setFirstName(e.target.value)}
+                                error={firstNameError}
+                                helperText={firstNameError ? "Please enter a first name" : ""}
                                 required
                                 fullWidth
                                 id="firstName"
@@ -75,6 +130,9 @@ const SignupForm = (props: ISignupForm) => {
                                 id="lastName"
                                 label="Last Name"
                                 name="lastName"
+                                onChange={(e) => setLastName(e.target.value)}
+                                error={lastNameError}
+                                helperText={lastNameError ? "Please enter a last name" : ""}
                                 autoComplete="family-name"
                             />
                         </Grid>
@@ -85,17 +143,21 @@ const SignupForm = (props: ISignupForm) => {
                                 id="email"
                                 label="Email Address"
                                 name="email"
+                                onChange={(e) => setEmail(e.target.value)}
+                                error={emailError}
+                                helperText={emailError ? "Please enter a valid email" : ""}
                                 autoComplete="email"
                             />
                         </Grid>
                         <Grid item xs={12}>
                             <FormControl sx={{ width: '100%' }} variant="outlined">
-                                <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+                                <InputLabel htmlFor="outlined-adornment-password">Password  *</InputLabel>
                                 <OutlinedInput
-                                    required
                                     name="password"
+                                    error={passwordError}
                                     id="outlined-adornment-password"
                                     type={showPassword ? 'text' : 'password'}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     endAdornment={
                                         <InputAdornment position="end">
                                             <IconButton
@@ -108,11 +170,17 @@ const SignupForm = (props: ISignupForm) => {
                                             </IconButton>
                                         </InputAdornment>
                                     }
-                                    label="Password"
+                                    label="Password *"
                                 />
+                                {passwordError && (
+                                    <FormHelperText error id="outlined-adornment-password-error">
+                                        Please enter at least 6 characters
+                                    </FormHelperText>
+                                )}
                             </FormControl>
                         </Grid>
                     </Grid>
+                    {axiosError !== "" && <Grid><Typography component="h1" variant="h5"><Alert severity="error">{axiosError}</Alert></Typography></Grid>}
                     <Button
                         type="submit"
                         fullWidth
@@ -123,7 +191,7 @@ const SignupForm = (props: ISignupForm) => {
                     </Button>
                     <Grid container justifyContent="flex-end">
                         <Grid item>
-                            <Link href="#" variant="body2">
+                            <Link href="/login" variant="body2">
                                 Already have an account? Sign in
                             </Link>
                         </Grid>
