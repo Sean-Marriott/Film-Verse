@@ -25,7 +25,7 @@ const FilmList = () => {
     const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
     const { data, status: filmsStatus, error: filmsError } = useQuery(
         ['films', searchTerm, sort, filterGenres, filterAgeRatings],
-        () => getFilmsParametrised(searchTerm, filterGenres, filterAgeRatings, sort, ""))
+        () => getFilmsParametrised(searchTerm, filterGenres, filterAgeRatings, sort, "", ""))
 
     const ageRatings = [
         "G",

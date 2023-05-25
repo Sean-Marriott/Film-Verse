@@ -1,6 +1,6 @@
 import {AxiosError} from 'axios';
 import {useParams} from "react-router-dom";
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {
     Alert,
     Avatar,
@@ -27,6 +27,7 @@ import SendIcon from '@mui/icons-material/Send';
 import Button from "@mui/material/Button";
 import {useUserStore} from "../store";
 import TabPanel from "./TabPanel";
+import {useWindowSize} from "../hooks/useWindowSize"
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -41,27 +42,6 @@ const style = {
     p: 4,
 };
 
-function useWindowSize() {
-    const[similarFilmsPerPage, setSimilarFilmsPerPage] = useState(1)
-    const handleResize = () => {
-        if (window.innerWidth > 0) setSimilarFilmsPerPage(1)
-        if (window.innerWidth > 630) setSimilarFilmsPerPage(2)
-        if (window.innerWidth > 850) setSimilarFilmsPerPage(3)
-        if (window.innerWidth >= 900) setSimilarFilmsPerPage(1)
-        if (window.innerWidth > 1060) setSimilarFilmsPerPage(2)
-        if (window.innerWidth > 1500) setSimilarFilmsPerPage(3)
-    }
-
-    useEffect(() => {
-        handleResize()
-        window.addEventListener("resize", handleResize)
-        return () => {
-            window.removeEventListener("resize", handleResize)
-        }
-    }, [])
-    return similarFilmsPerPage;
-}
-
 const Film = () => {
     const loggedInUserId = useUserStore(state => state.userId)
     const loggedInUserToken= useUserStore(state => state.authToken)
@@ -75,10 +55,10 @@ const Film = () => {
     const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
     const { data: film, status: filmStatus, error: filmError  } = useQuery(['film', id], () => getFilm(id? id:"-1"))
     const { data: reviews, status: reviewStatus, error: reviewError } = useQuery(['reviews', id], () => getReviews(id? id:"-1"))
-    const { data: similarFilmGenreId, status: similarFilmGenreIdStatus, error:similarFilmGenreIdError } = useQuery(['similarFilmGenreId', id], () => getFilmsParametrised("", film.genreId, [], "RELEASED_ASC", ""), {
+    const { data: similarFilmGenreId, status: similarFilmGenreIdStatus, error:similarFilmGenreIdError } = useQuery(['similarFilmGenreId', id], () => getFilmsParametrised("", film.genreId, [], "RELEASED_ASC", "", ""), {
         select: (data) => data.films,
         enabled: !!film})
-    const { data: similarFilmDirectorId, status: similarFilmDirectorIdStatus, error:similarFilmDirectorIdError } = useQuery(['similarFilmDirectorId', id], () => getFilmsParametrised("", [], [], "RELEASED_ASC", film.directorId), {
+    const { data: similarFilmDirectorId, status: similarFilmDirectorIdStatus, error:similarFilmDirectorIdError } = useQuery(['similarFilmDirectorId', id], () => getFilmsParametrised("", [], [], "RELEASED_ASC", film.directorId, ""), {
         select: (data) => data.films,
         enabled: !!film})
 
