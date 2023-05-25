@@ -17,9 +17,14 @@ import {useQuery} from "react-query";
 import {logout} from "../api/usersApi";
 import {useNavigate} from "react-router-dom";
 import {AxiosError} from "axios";
+import {useUserStore} from "../store";
 
 
 const Navbar = () => {
+    const currentUserId = useUserStore(state => state.userId)
+    const currentAuthToken = useUserStore(state => state.authToken)
+    const removeAuthToken = useUserStore((state) => state.removeAuthToken)
+    const removeUserId = useUserStore((state) => state.removeUserId)
     const [axiosError, setAxiosError] = React.useState("")
     const [openErrorSnackbar, setOpenErrorSnackbar] = React.useState(false)
     const [openLogoutSnackbar, setOpenLogoutSnackbar] = React.useState(false)
@@ -27,7 +32,7 @@ const Navbar = () => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
         React.useState<null | HTMLElement>(null);
-    const { refetch } = useQuery ('logout', logout, {enabled: false,
+    const { refetch } = useQuery ('logout', () => logout(currentAuthToken), {enabled: false,
         onSuccess: () => {
             setOpenLogoutSnackbar(true)
         },
@@ -36,16 +41,11 @@ const Navbar = () => {
             setOpenErrorSnackbar(true)
         },
         onSettled: () => {
-            localStorage.removeItem('authToken')
-            localStorage.removeItem('userId')
+            removeAuthToken()
+            removeUserId()
         }})
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-
-    function isLoggedIn(): boolean {
-        const userId = localStorage.getItem('userId')
-        return (userId !== null)
-    }
 
     const Logo = () => {
         return <img width="90" src="/logo.png" alt="filmVerse logo"/>
@@ -107,10 +107,10 @@ const Navbar = () => {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            { isLoggedIn() && <MenuItem onClick={handleMenuClose}>Profile</MenuItem>}
-            { isLoggedIn() && <MenuItem onClick={handleLogOut}>Log Out</MenuItem>}
-            { !isLoggedIn() && <MenuItem onClick={handleLogin}>Log in</MenuItem>}
-            { !isLoggedIn() && <MenuItem onClick={handleSignup}>Sign up</MenuItem>}
+            { currentUserId !== -1 && <MenuItem onClick={handleMenuClose}>Profile</MenuItem>}
+            { currentUserId !== -1 && <MenuItem onClick={handleLogOut}>Log Out</MenuItem>}
+            { currentUserId === -1  && <MenuItem onClick={handleLogin}>Log in</MenuItem>}
+            { currentUserId === -1  && <MenuItem onClick={handleSignup}>Sign up</MenuItem>}
 
         </Menu>
     );

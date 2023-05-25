@@ -16,11 +16,15 @@ import {useMutation} from "react-query";
 import {login, signup} from "../api/usersApi";
 import {AxiosError} from "axios";
 import {useState} from "react";
+import {useUserStore} from "../store";
 
 interface ISignupForm {
     handleNext: () => void;
 }
 const SignupForm = (props: ISignupForm) => {
+    const loggedInUserId = useUserStore(state => state.userId)
+    const setAuthToken = useUserStore((state) => state.setAuthToken)
+    const setUserId = useUserStore((state) => state.setUserId)
     const [showPassword, setShowPassword] = React.useState(false);
     const [firstName, setFirstName] = React.useState("")
     const [lastName, setLastName] = React.useState("")
@@ -30,22 +34,28 @@ const SignupForm = (props: ISignupForm) => {
     const [lastNameError, setLastNameError] = React.useState(false)
     const [emailError, setEmailError] = React.useState(false)
     const [passwordError, setPasswordError] = React.useState(false)
-    const [axiosError, setAxiosError] = useState("")
-    const loginMutation = useMutation(login)
+    const [signupAxiosError, setSignupAxiosError] = useState("")
+    const [loginAxiosError, setLoginAxiosError] = useState("")
+    const loginMutation = useMutation(login, {
+        onSuccess: (data) => {
+            console.log(data)
+            setAuthToken(data.token)
+            setUserId(data.userId)
+            props.handleNext()
+        },
+        onError: (error: AxiosError) => {
+            setLoginAxiosError(error.response?.statusText || "Axios Error: Unknown")
+        }
+    })
     const signupMutation  = useMutation(signup, {
         onSuccess: () => {
-            props.handleNext()
             const form = new FormData()
             form.set('email', email)
             form.set('password', password)
             loginMutation.mutate(form)
         },
         onError: (error: AxiosError) => {
-            if (error.response?.status === 403) {
-                setAxiosError("Email already in use")
-            } else {
-                setAxiosError(error.message)
-            }
+            setSignupAxiosError(error.response?.statusText || "Axios Error: Unknown")
         },
     })
     const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -56,11 +66,18 @@ const SignupForm = (props: ISignupForm) => {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setAxiosError("")
+        setLoginAxiosError("")
+        setSignupAxiosError("")
         if (validateData()) {
             signupMutation.mutate(new FormData(event.currentTarget))
         }
     };
+
+
+
+    console.log(loggedInUserId)
+
+
 
     function validateData() {
         let valid = true
@@ -183,7 +200,8 @@ const SignupForm = (props: ISignupForm) => {
                             </FormControl>
                         </Grid>
                     </Grid>
-                    {axiosError !== "" && <Grid><Typography component="h1" variant="h5"><Alert severity="error">{axiosError}</Alert></Typography></Grid>}
+                    {signupAxiosError !== "" && <Grid><Typography component="h1" variant="h5"><Alert severity="error">{signupAxiosError}</Alert></Typography></Grid>}
+                    {loginAxiosError !== "" && <Grid><Typography component="h1" variant="h5"><Alert severity="error">{loginAxiosError}</Alert></Typography></Grid>}
                     <Button
                         type="submit"
                         fullWidth

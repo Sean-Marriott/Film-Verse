@@ -24,6 +24,8 @@ import AddCommentIcon from '@mui/icons-material/AddComment';
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
 import SendIcon from '@mui/icons-material/Send';
+import Button from "@mui/material/Button";
+import {useUserStore} from "../store";
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -84,6 +86,9 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const Film = () => {
+    const loggedInUserId = useUserStore(state => state.userId)
+    const loggedInUserToken= useUserStore(state => state.authToken)
+
     const queryClient = useQueryClient()
     const [axiosError, setAxiosError] = useState("")
     const { id } = useParams<{ id: string }>();
@@ -91,7 +96,6 @@ const Film = () => {
     const [page, setPage] = useState(1);
     const similarFilmsPerPage = useWindowSize();
     const [openModal, setOpenModal] = React.useState(false);
-    const [loggedInUserId, setLoggedInUserId] = React.useState(localStorage.getItem('userId'))
     const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
     const { data: film, status: filmStatus, error: filmError  } = useQuery(['film', id], () => getFilm(id? id:"-1"))
     const { data: reviews, status: reviewStatus, error: reviewError } = useQuery(['reviews', id], () => getReviews(id? id:"-1"))
@@ -101,6 +105,9 @@ const Film = () => {
     const { data: similarFilmDirectorId, status: similarFilmDirectorIdStatus, error:similarFilmDirectorIdError } = useQuery(['similarFilmDirectorId', id], () => getFilmsParametrised("", [], [], "RELEASED_ASC", film.directorId), {
         select: (data) => data.films,
         enabled: !!film})
+
+    console.log(loggedInUserId)
+    console.log(loggedInUserToken)
 
     const addReviewMutation  = useMutation(addReview, {
         onSuccess: () => {
@@ -235,7 +242,7 @@ const Film = () => {
                                         <Tab value={2} label="Reviews" />
                                         <Tab value={3} label="Similar Films" />
                                     </Tabs>
-                                    {tab === 2 && loggedInUserId && <IconButton aria-label="addReview" size="small" onClick={handleOpenModal}><AddCommentIcon color="secondary"/></IconButton>}
+                                    {tab === 2 && <IconButton aria-label="addReview" size="small" onClick={handleOpenModal}><AddCommentIcon color="secondary"/></IconButton>}
                                 </Stack>
                             </Grid>
                             <TabPanel value={tab} index={1}>
@@ -280,7 +287,7 @@ const Film = () => {
                     </Grid>
                 </Paper>
             </Grid>
-            {loggedInUserId && <Modal
+            <Modal
                 open={openModal}
                 onClose={handleCloseModal}
                 aria-labelledby="modal-modal-title"
@@ -291,26 +298,41 @@ const Film = () => {
                         <Grid xs={12}>
                             <Typography variant="h6">Add Review: </Typography>
                         </Grid>
-                        <Grid xs={12}>
-                            <Rating name="reviewRating" precision={0.5} max={10}/>
-                        </Grid>
-                        <Grid xs={12}>
-                            <TextField
-                                fullWidth
-                                name="reviewText"
-                                id="outlined-multiline-static"
-                                multiline
-                                rows={4}
-                                placeholder="Wow, what an amazing movie!!"
-                            />
-                        </Grid>
-                        <Grid xs={12} container justifyContent='flex-end'>
-                            {axiosError !== "" && <Alert sx={{mr: 3}} severity="error">{axiosError}</Alert>}
-                            <IconButton aria-label="addReview" size="small" type="submit"><SendIcon color="secondary"/></IconButton>
-                        </Grid>
+                        {loggedInUserId !== -1 && <Grid container>
+                            <Grid xs={12}>
+                                <Rating name="reviewRating" precision={0.5} max={10}/>
+                            </Grid>
+                            <Grid xs={12}>
+                                <TextField
+                                    fullWidth
+                                    name="reviewText"
+                                    id="outlined-multiline-static"
+                                    multiline
+                                    rows={4}
+                                    placeholder="Wow, what an amazing movie!!"
+                                />
+                            </Grid>
+                            <Grid xs={12} container justifyContent='flex-end'>
+                                {axiosError !== "" && <Alert sx={{mr: 3}} severity="error">{axiosError}</Alert>}
+                                <IconButton aria-label="addReview" size="small" type="submit"><SendIcon color="secondary"/></IconButton>
+                            </Grid>
+                        </Grid>}
+                        {loggedInUserId === -1 && <Grid container>
+                            <Grid>
+                                <Typography variant="subtitle2">You must be logged in to place a review</Typography>
+                            </Grid>
+                            <Grid container spacing={2}>
+                                <Grid>
+                                    <Button variant="outlined" href="/signup">Signup</Button>
+                                </Grid>
+                                <Grid>
+                                    <Button variant="outlined" href="/login">Login</Button>
+                                </Grid>
+                            </Grid>
+                        </Grid>}
                     </Grid>
                 </Box>
-            </Modal>}
+            </Modal>
         </Grid>
     )
 

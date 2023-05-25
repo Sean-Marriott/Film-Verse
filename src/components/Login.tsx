@@ -14,8 +14,13 @@ import {useState} from "react";
 import {AxiosError} from "axios";
 import {Alert} from "@mui/material";
 import {useNavigate} from "react-router-dom";
+import {useUserStore} from "../store";
 
 const Login = () => {
+    const loggedInUserId = useUserStore(state => state.userId)
+    const loggedInUserToken = useUserStore(state => state.authToken)
+    const setAuthToken = useUserStore((state) => state.setAuthToken)
+    const setUserId = useUserStore((state) => state.setUserId)
     const navigate = useNavigate()
     const [emailAddress, setEmailAddress] = useState("");
     const [emailAddressErrorMessage, setEmailAddressErrorMessage] = useState("")
@@ -23,8 +28,13 @@ const Login = () => {
     const [passwordErrorMessage, setPasswordErrorMessage] = useState("")
     const [axiosError, setAxiosError] = useState("")
 
+    console.log(loggedInUserId)
+    console.log(loggedInUserToken)
+
     const mutation  = useMutation(login, {
-        onSuccess: () => {
+        onSuccess: (data) => {
+            setAuthToken(data.token)
+            setUserId(data.userId)
             console.log("SUCCESS")
             navigate('/films')
         },

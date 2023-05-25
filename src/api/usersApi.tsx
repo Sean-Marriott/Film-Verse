@@ -9,10 +9,7 @@ export const login = async (formData: FormData) => {
         "email": formData.get('email'),
         "password": formData.get('password'),
     })
-    console.log(submitData)
     const response = await usersApi.post("/login", submitData, {headers: {'Content-Type': 'application/json'}})
-    localStorage.setItem('authToken', response.data.token)
-    localStorage.setItem('userId', response.data.userId)
     return response.data
 }
 
@@ -24,17 +21,12 @@ export const signup = async (formData: FormData) => {
         firstName: formData.get('firstName')
     })
     const response = await usersApi.post('http://localhost:4941/api/v1/users/register', submitData, {headers: {'Content-Type': 'application/json'}})
-    console.log(response)
-    localStorage.setItem('authToken', response.data.token)
-    localStorage.setItem('userId', response.data.userId)
     return response.data
 }
 
-export const logout = async () => {
-    const authtoken = localStorage.getItem('authToken')
-
-    if (authtoken) {
-        const response = await usersApi.post("/logout", {}, {headers: {'X-Authorization': authtoken}})
+export const logout = async (loggedInUserToken: string) => {
+    if (loggedInUserToken !== "") {
+        const response = await usersApi.post("/logout", {}, {headers: {'X-Authorization': loggedInUserToken}})
         return response.data
     }
 }
