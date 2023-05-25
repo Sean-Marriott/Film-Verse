@@ -14,6 +14,8 @@ import AddFilm from "./components/AddFilm";
 import {LocalizationProvider} from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import Profile from "./components/Profile";
+import PrivateRoutes from "./utils/PrivateRoutes";
+import StrictUnAuthRoutes from "./utils/StrictUnAuthRoutes";
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
@@ -29,12 +31,16 @@ root.render(
                 <Navbar />
                 <div>
                     <Routes>
-                        <Route path="/profile" element={<Profile/>}></Route>
-                        <Route path="/signup" element={<Signup/>}></Route>
-                        <Route path="/login" element={<Login/>}></Route>
+                        <Route element={<PrivateRoutes />}>
+                            <Route path="/profile" element={<Profile/>}></Route>
+                            <Route path="/addFilm" element={<AddFilm/>}></Route>
+                        </Route>
+                        <Route element={<StrictUnAuthRoutes />}>
+                            <Route path="/signup" element={<Signup/>}></Route>
+                            <Route path="/login" element={<Login/>}></Route>
+                        </Route>
                         <Route path="/films" element={<FilmList/>}/>
                         <Route path="/film/:id" element={<Film/>}/>
-                        <Route path="/addFilm" element={<AddFilm/>}></Route>
                         <Route path="*" element={<NotFound/>}/>
                     </Routes>
                 </div>
