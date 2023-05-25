@@ -34,3 +34,13 @@ export const logout = async (loggedInUserToken: string) => {
         return response.data
     }
 }
+
+export const uploadProfilePic = async (image: File) => {
+    let userId = localStorage.getItem("userId")
+    let loggedInUserToken = localStorage.getItem("authToken")
+    if (image && loggedInUserToken !== "") {
+        const response = await usersApi.put("/" + userId + "/image", image, {headers: {'X-Authorization': loggedInUserToken, 'Content-Type': image.type}}  )
+        return response.data
+    }
+}
+

@@ -19,14 +19,16 @@ const Profile = () => {
     const [userAxiosError, setUserAxiosError] = useState("")
     const { data: user, status: userStatus} = useQuery('profile', () => getUser(currentUserId, currentUserToken), {
         onError: (error: AxiosError) => {
-            setUserAxiosError(error.response?.statusText || "Axios Error: Unknown")
+            if (error.response) {setUserAxiosError("Unable to get user: " + error.response.statusText)}
+            else {setUserAxiosError("Unable to get user: " + error.message)}
         },
     })
 
     const [genresAxiosError, setGenresAxiosError] = useState("")
     const { data: genres, status: genresStatus } = useQuery('genres', getGenres, {
         onError: (error: AxiosError) => {
-            setGenresAxiosError(error.response?.statusText || "Axios Error: Unknown")
+            if (error.response) {setGenresAxiosError("Unable to get genres: " + error.response.statusText)}
+            else {setGenresAxiosError("Unable to get genres: " + error.message)}
         },
     })
 
@@ -34,7 +36,8 @@ const Profile = () => {
     const { data: directedFilms, status: directedFilmsStatus} = useQuery('directedFilms', () => getFilmsParametrised("", [], [], "RELEASED_ASC", currentUserId.toString(), ""), {
         select: (data) => data.films,
         onError: (error: AxiosError) => {
-            setDirectedFilmsAxiosError(error.response?.statusText || "Axios Error: Unknown")
+            if (error.response) {setDirectedFilmsAxiosError("Unable to get films by director: " + error.response.statusText)}
+            else {setDirectedFilmsAxiosError("Unable to get films by director: " + error.message)}
         },
     })
 
@@ -42,7 +45,8 @@ const Profile = () => {
     const { data: reviewedFilms, status: reviewedFilmsStatus} = useQuery('reviewedFilms', () => getFilmsParametrised("", [], [], "RELEASED_ASC", "", currentUserId.toString()), {
         select: (data) => data.films,
         onError: (error: AxiosError) => {
-            setReviewedFilmsAxiosError(error.response?.statusText || "Axios Error: Unknown")
+            if (error.response) {setReviewedFilmsAxiosError("Unable to get films by reviewer: " + error.response.statusText)}
+            else {setReviewedFilmsAxiosError("Unable to get films by reviewer: " + error.message)}
         },
     })
 
@@ -53,6 +57,7 @@ const Profile = () => {
     const defaultImage = "http://localhost:4941/api/v1/users/" + currentUserId + "/image";
     const filmsPerPage = useWindowSize();
     const handleImageError = () => {
+        console.log("Image Error: Resulting to default image")
         setImageError(true);
     };
 
@@ -118,12 +123,12 @@ const Profile = () => {
 
     return(
         <Paper elevation={3} sx={{m:6, ml:10, mr:10}}>
-        <Grid container >
+            <Grid container >
                 <Grid xs={12} md={6} sx={{p:2}}>
                     <CardMedia
                         component="img"
                         height="500"
-                        src={imageError ? defaultImage : "defaultProfilePic.png"}
+                        src={imageError ? "defaultProfilePic.png":defaultImage}
                         alt="User Profile Picture"
                         onError={handleImageError}
                         sx={{ objectFit: "fill" }}
@@ -181,7 +186,7 @@ const Profile = () => {
                         </TabPanel>
                     </Grid>
                 </Grid>
-        </Grid>
+            </Grid>
         </Paper>
 
     )

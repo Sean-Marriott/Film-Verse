@@ -73,6 +73,7 @@ const Navbar = () => {
     const handleLogOut = () => {
         handleMenuClose()
         void refetch()
+        navigate('/')
     }
 
     const handleLogin = () => {
@@ -84,6 +85,11 @@ const Navbar = () => {
         handleMenuClose()
         navigate('/signup')
     }
+    const handleProfile = () => {
+        handleMenuClose()
+        navigate('/profile')
+    }
+
     const handleCloseErrorSnackbar = () => {
         setOpenErrorSnackbar(false)
     };
@@ -109,7 +115,7 @@ const Navbar = () => {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            { currentUserId !== -1 && <MenuItem onClick={handleMenuClose}>Profile</MenuItem>}
+            { currentUserId !== -1 && <MenuItem onClick={handleProfile}>Profile</MenuItem>}
             { currentUserId !== -1 && <MenuItem onClick={handleLogOut}>Log Out</MenuItem>}
             { currentUserId === -1  && <MenuItem onClick={handleLogin}>Log in</MenuItem>}
             { currentUserId === -1  && <MenuItem onClick={handleSignup}>Sign up</MenuItem>}

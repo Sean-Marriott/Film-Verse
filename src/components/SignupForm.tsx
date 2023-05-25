@@ -55,7 +55,8 @@ const SignupForm = (props: ISignupForm) => {
             loginMutation.mutate(form)
         },
         onError: (error: AxiosError) => {
-            setSignupAxiosError(error.response?.statusText || "Axios Error: Unknown")
+            if (error.response) {setSignupAxiosError("Unable to signup: " + error.response.statusText)}
+            else {setSignupAxiosError("Unable to upload signup: " + error.message)}
         },
     })
     const handleClickShowPassword = () => setShowPassword((show) => !show);

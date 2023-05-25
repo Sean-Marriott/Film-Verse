@@ -1,20 +1,20 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Grid from "@mui/material/Unstable_Grid2";
-import {Stack} from "@mui/material";
 import SignupForm from "./SignupForm";
+import AddPicture from "./AddPicture";
+import {useNavigate} from "react-router-dom";
 
 const steps = ['Signup', 'Add a profile picture'];
 
 const Signup = () => {
+    const navigate = useNavigate()
     const [activeStep, setActiveStep] = React.useState(0);
     const [skipped, setSkipped] = React.useState(new Set<number>());
-
     const isStepOptional = (step: number) => {
         return step === 1;
     };
@@ -34,25 +34,8 @@ const Signup = () => {
         setSkipped(newSkipped);
     };
 
-    const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    };
-
-    const handleSkip = () => {
-        if (!isStepOptional(activeStep)) {
-            throw new Error("You can't skip a step that isn't optional.");
-        }
-
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        setSkipped((prevSkipped) => {
-            const newSkipped = new Set(prevSkipped.values());
-            newSkipped.add(activeStep);
-            return newSkipped;
-        });
-    };
-
-    const handleReset = () => {
-        setActiveStep(0);
+    const handleFinish = () => {
+        navigate('/profile')
     };
 
     return (
@@ -81,47 +64,23 @@ const Signup = () => {
                 </Stepper>
             </Grid>
             <Grid container xs={12} alignItems="center" justifyContent="center">
-                {activeStep === steps.length ? (
-                    <Grid>
-                        <React.Fragment>
-                            <Typography sx={{ mt: 2, mb: 1 }}>
-                                All steps completed - you&apos;re finished
-                            </Typography>
-                            <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                                <Box sx={{ flex: '1 1 auto' }} />
-                                <Button onClick={handleReset}>Reset</Button>
-                            </Box>
-                        </React.Fragment>
-                    </Grid>
-                ) : (
                     <React.Fragment>
                         <Grid>
                             {activeStep === 0 && <SignupForm handleNext={handleNext} />}
-                            <Stack mt={3} direction="row">
-                                <Button
-                                    color="inherit"
-                                    disabled={activeStep === 0}
-                                    onClick={handleBack}
-                                    sx={{ mr: 1 }}
-                                >
-                                    Back
-                                </Button>
-                                <Box sx={{ flex: '1 1 auto' }} />
-                                {isStepOptional(activeStep) && (
-                                    <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
-                                        Skip
-                                    </Button>
+                            <Grid container spacing={2} alignItems="flex-end">
+                                <Grid>
+                                    {activeStep === 1 && <AddPicture />}
+                                </Grid>
+                                {activeStep === 1 && (
+                                    <Grid>
+                                        <Button color="inherit" variant="outlined" onClick={handleFinish} sx={{ mr: 1 }}>
+                                            Skip
+                                        </Button>
+                                    </Grid>
                                 )}
-                                <Button
-                                    onClick={handleNext}
-                                    disabled={activeStep === 0}
-                                >
-                                    {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-                                </Button>
-                            </Stack>
+                            </Grid>
                         </Grid>
                     </React.Fragment>
-                )}
             </Grid>
         </Grid>
     );
