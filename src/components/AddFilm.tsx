@@ -66,6 +66,8 @@ const AddFilm = () => {
         if (filmData) {
             addFilmMutation.mutateAsync(filmData).then(data => {
                 uploadFilmPicMutation.mutate({filmId: data.filmId, image: filmImage})
+            }).catch(error => {
+                console.log(error)
             })
         }
     }
@@ -102,7 +104,7 @@ const AddFilm = () => {
                     <React.Fragment>
                         <Grid>
                             {activeStep === 0 && <AddFilmForm setFilmData={setFilmDataFunc} handleNext={handleNext} axiosError={axiosError} />}
-                            {activeStep === 1 && <AddFilmImage submitFilm={submitFilm} setFilmImage={setFilmImageFunc}/>}
+                            {activeStep === 1 && <AddFilmImage filmId={-1} submitFilm={submitFilm} setFilmImage={setFilmImageFunc}/>}
                         </Grid>
                     </React.Fragment>
                 )}

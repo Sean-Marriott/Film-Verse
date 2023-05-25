@@ -1,13 +1,19 @@
 import Button from "@mui/material/Button";
-import {Stack} from "@mui/material";
+import {Avatar, Stack} from "@mui/material";
 import * as React from "react";
-import {ChangeEvent} from "react";
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import {ChangeEvent, useState} from "react";
 interface IAddFilmImage {
+    filmId: number
     submitFilm: () => void
     setFilmImage: (filmImage: File) => void
 }
 const AddFilmImage = (props: IAddFilmImage) => {
+    const [imageError, setImageError] = useState(false);
+    const defaultImage = "http://localhost:4941/api/v1/films/" + props.filmId + "/image";
+    const handleImageError = () => {
+        console.log("Image Error: Resulting to default image")
+        setImageError(true);
+    };
     const handleFilmImageChange = (event: ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
             if (event.target.files[0]) {
@@ -19,7 +25,12 @@ const AddFilmImage = (props: IAddFilmImage) => {
 
     return (
         <Stack alignItems="center" spacing={2}>
-            <AddPhotoAlternateIcon />
+            <Avatar
+                alt="User Profile Picture"
+                src={imageError ? "defaultFilmImage.png" : defaultImage}
+                onError={handleImageError}
+                sx={{ width: 200, height: 200, border:2 }}
+            />
             <Button
                 variant="contained"
                 component="label"
