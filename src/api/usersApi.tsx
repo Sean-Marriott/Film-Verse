@@ -44,3 +44,20 @@ export const uploadProfilePic = async (image: File) => {
     }
 }
 
+export const editProfile = async (formData: FormData) => {
+    let loggedInUserToken = localStorage.getItem("authToken")
+    let userId = localStorage.getItem("userId")
+    if (loggedInUserToken !== "" && userId !== "") {
+        const submitData = JSON.stringify({
+            email: formData.get('email'),
+            lastName: formData.get('lastName'),
+            firstName: formData.get('firstName'),
+            currentPassword: formData.get('currentPassword') || undefined,
+            password: formData.get('newPassword') || undefined,
+
+        })
+        console.log(submitData)
+        const response = await usersApi.patch('http://localhost:4941/api/v1/users/' + userId, submitData, {headers: {'X-Authorization': loggedInUserToken, 'Content-Type': 'application/json'}})
+        return response.data
+    }
+}

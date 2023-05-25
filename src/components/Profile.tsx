@@ -4,10 +4,11 @@ import Button from "@mui/material/Button";
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import {useUserStore} from "../store";
 import CardMedia from "@mui/material/CardMedia";
-import {useQuery} from "react-query";
-import {getUser} from "../api/usersApi";
+import {useMutation, useQuery, useQueryClient} from "react-query";
+import {editProfile, getUser} from "../api/usersApi";
 import {
-    CircularProgress, FormControl, InputAdornment,
+    Alert,
+    CircularProgress, FormControl, FormHelperText, InputAdornment,
     InputLabel,
     Modal, OutlinedInput,
     Pagination,
@@ -58,49 +59,30 @@ const style = {
 };
 
 const Profile = () => {
+    const queryClient = useQueryClient()
     const [formData, setFormData] = useState<FormData>(initialFormData);
+    const [firstNameError, setFirstNameError] = React.useState(false)
+    const [lastNameError, setLastNameError] = React.useState(false)
+    const [emailError, setEmailError] = React.useState(false)
+    const [currentPasswordError, setCurrentPasswordError] = React.useState(false)
+    const [newPasswordError, setNewPasswordError] = React.useState(false)
     const [openModal, setOpenModal] = React.useState(false);
     const [showCurrentPassword, setShowCurrentPassword] = React.useState(false);
-    const handleClickShowCurrentPassword= () => setShowCurrentPassword((show) => !show);
-    const handleMouseDownCurrentPassword = (event: React.MouseEvent<HTMLButtonElement>) => {event.preventDefault();};
-
-    const [showNewPassword, setShowNewPassword] = React.useState(false);
-    const handleClickShowNewPassword= () => setShowNewPassword((show) => !show);
-    const handleMouseDownNewPassword = (event: React.MouseEvent<HTMLButtonElement>) => {event.preventDefault();};
-    const handleOpenModal = () => setOpenModal(true);
-    const handleCloseModal = () => setOpenModal(false);
-    const handleChange = (e: ChangeEvent<HTMLInputElement>):void => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        })
-    }
-
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) : void => {
-        e.preventDefault()
-        let formData = new FormData(e.currentTarget)
-        console.log(formData.get("firstName"))
-        console.log(formData.get("lastName"))
-        console.log(formData.get("email"))
-        console.log(formData.get("currentPassword"))
-        console.log(formData.get("newPassword"))
-    }
-
-
     const currentUserId = useUserStore(state => state.userId)
     const currentUserToken = useUserStore(state => state.authToken)
+    const [showNewPassword, setShowNewPassword] = React.useState(false);
     const [userAxiosError, setUserAxiosError] = useState("")
     const { data: user, status: userStatus} = useQuery('profile', () => getUser(currentUserId, currentUserToken), {
         onSuccess: (data) => {
-          const preExistingData: FormData = {
-              firstName: data.firstName,
-              lastName: data.lastName,
-              email: data.email,
-              currentPassword: '',
-              newPassword: ''
+            const preExistingData: FormData = {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                currentPassword: '',
+                newPassword: ''
 
-          }
-          setFormData(preExistingData)
+            }
+            setFormData(preExistingData)
         },
         onError: (error: AxiosError) => {
             if (error.response) {setUserAxiosError("Unable to get user: " + error.response.statusText)}
@@ -134,6 +116,18 @@ const Profile = () => {
         },
     })
 
+    const [editProfileAxiosError, setEditProfileAxiosError] = useState("")
+    const editProfileMutation = useMutation(editProfile, {
+        onSuccess: () => {
+            console.log("SUCCESS!")
+            void queryClient.invalidateQueries({ queryKey: ['profile'] })
+            handleCloseModal()
+        },
+        onError: (error: AxiosError) => {
+            if (error.response) {setEditProfileAxiosError(error.response.statusText)}
+            else {setEditProfileAxiosError("Unable to edit profile: " + error.message)}
+        },
+    })
     const [directedFilmsPage, setDirectedFilmsPage] = useState(1);
     const [reviewedFilmsPage, setReviewedFilmsPage] = useState(1);
     const [tab, setTab] = React.useState(1);
@@ -203,6 +197,65 @@ const Profile = () => {
     function convertToDate(dateString: string): string {
         const date = new Date(dateString);
         return date.toLocaleString();
+    }
+
+    const handleClickShowCurrentPassword= () => setShowCurrentPassword((show) => !show);
+    const handleMouseDownCurrentPassword = (event: React.MouseEvent<HTMLButtonElement>) => {event.preventDefault();};
+    const handleClickShowNewPassword= () => setShowNewPassword((show) => !show);
+    const handleMouseDownNewPassword = (event: React.MouseEvent<HTMLButtonElement>) => {event.preventDefault();};
+    const handleOpenModal = () => setOpenModal(true);
+    const handleCloseModal = () => setOpenModal(false);
+    const handleChange = (e: ChangeEvent<HTMLInputElement>):void => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        })
+    }
+
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) : void => {
+        e.preventDefault()
+        setEditProfileAxiosError("")
+        if (validateData()) {
+            let formData = new FormData(e.currentTarget)
+            editProfileMutation.mutate(formData)
+        }
+    }
+
+    function validateData(): boolean {
+        let valid = true
+        setFirstNameError(false)
+        setLastNameError(false)
+        setEmailError(false)
+        setCurrentPasswordError(false)
+        setNewPasswordError(false)
+        const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
+
+        if (formData.firstName === "") {
+            setFirstNameError(true)
+            valid = false
+        }
+
+        if (formData.lastName === "") {
+            setLastNameError(true)
+            valid = false
+        }
+
+        if (formData.email === "" || !emailRegex.test(formData.email)) {
+            setEmailError(true)
+            valid = false
+        }
+
+        if (formData.currentPassword !== "" || formData.newPassword !== "") {
+            if (formData.currentPassword.length < 6) {
+                setCurrentPasswordError(true)
+                valid = false
+            } if (formData.newPassword.length < 6) {
+                setNewPasswordError(true)
+                valid = false
+            }
+        }
+        console.log(formData)
+        return valid
     }
 
     return(
@@ -289,6 +342,8 @@ const Profile = () => {
                                     label="First Name"
                                     variant="outlined"
                                     name="firstName"
+                                    error={firstNameError}
+                                    helperText={firstNameError ? "Please enter a first name" : ""}
                                     value={formData.firstName}
                                     onChange={handleChange}
                                 />
@@ -299,6 +354,8 @@ const Profile = () => {
                                     label="Last Name"
                                     variant="outlined"
                                     name="lastName"
+                                    error={lastNameError}
+                                    helperText={lastNameError ? "Please enter a last name" : ""}
                                     value={formData.lastName}
                                     onChange={handleChange}
                                 />
@@ -310,6 +367,8 @@ const Profile = () => {
                                     label="Email"
                                     variant="outlined"
                                     name="email"
+                                    error={emailError}
+                                    helperText={emailError ? "Please enter a valid email" : ""}
                                     value={formData.email}
                                     onChange={handleChange}
                                 />
@@ -322,6 +381,7 @@ const Profile = () => {
                                         id="outlined-adornment-current-password"
                                         type={showCurrentPassword ? 'text' : 'password'}
                                         onChange={handleChange}
+                                        error={currentPasswordError}
                                         endAdornment={
                                             <InputAdornment position="end">
                                                 <IconButton
@@ -336,6 +396,11 @@ const Profile = () => {
                                         }
                                         label="Current Password  *"
                                     />
+                                    {currentPasswordError && (
+                                        <FormHelperText error id="outlined-adornment-password-error">
+                                            Please enter at least 6 characters
+                                        </FormHelperText>
+                                    )}
                                 </FormControl>
                             </Grid>
                             <Grid xs={12}>
@@ -346,6 +411,7 @@ const Profile = () => {
                                         id="outlined-adornment-new-password"
                                         type={showNewPassword ? 'text' : 'password'}
                                         onChange={handleChange}
+                                        error={newPasswordError}
                                         endAdornment={
                                             <InputAdornment position="end">
                                                 <IconButton
@@ -360,10 +426,15 @@ const Profile = () => {
                                         }
                                         label="New Password  *"
                                     />
+                                    {newPasswordError && (
+                                        <FormHelperText error id="outlined-adornment-password-error">
+                                            Please enter at least 6 characters
+                                        </FormHelperText>
+                                    )}
                                 </FormControl>
                             </Grid>
                             <Grid xs={12} container justifyContent='flex-end'>
-                                {/*{axiosError !== "" && <Alert sx={{mr: 3}} severity="error">{axiosError}</Alert>}*/}
+                                {editProfileAxiosError !== "" && <Alert sx={{mr: 3}} severity="error">{editProfileAxiosError}</Alert>}
                                 <IconButton aria-label="addReview" size="small" type="submit"><EditIcon color="secondary"/></IconButton>
                             </Grid>
                         </Grid>

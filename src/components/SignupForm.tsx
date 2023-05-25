@@ -22,7 +22,6 @@ interface ISignupForm {
     handleNext: () => void;
 }
 const SignupForm = (props: ISignupForm) => {
-    const loggedInUserId = useUserStore(state => state.userId)
     const setAuthToken = useUserStore((state) => state.setAuthToken)
     const setUserId = useUserStore((state) => state.setUserId)
     const [showPassword, setShowPassword] = React.useState(false);
@@ -55,7 +54,7 @@ const SignupForm = (props: ISignupForm) => {
             loginMutation.mutate(form)
         },
         onError: (error: AxiosError) => {
-            if (error.response) {setSignupAxiosError("Unable to signup: " + error.response.statusText)}
+            if (error.response) {setSignupAxiosError(error.response.statusText)}
             else {setSignupAxiosError("Unable to upload signup: " + error.message)}
         },
     })
@@ -73,12 +72,6 @@ const SignupForm = (props: ISignupForm) => {
             signupMutation.mutate(new FormData(event.currentTarget))
         }
     };
-
-
-
-    console.log(loggedInUserId)
-
-
 
     function validateData() {
         let valid = true
