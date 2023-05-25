@@ -29,11 +29,7 @@ const Login = () => {
             navigate('/films')
         },
         onError: (error: AxiosError) => {
-            if (error.response?.status === 401) {
-                setAxiosError("Incorrect email/password")
-            } else {
-                setAxiosError(error.message)
-            }
+            setAxiosError(error.response?.statusText || "Axios Error: Unknown")
         },
     })
 

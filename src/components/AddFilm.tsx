@@ -8,17 +8,32 @@ import AddFilmForm from "./AddFilmForm";
 import {useMutation} from "react-query";
 import {addFilm} from "../api/filmsApi";
 import AddFilmImage from "./AddFilmImage";
+import {AxiosError} from "axios";
+import {useNavigate} from "react-router-dom";
 
 const steps = ['Add Film', 'Add a film hero image'];
 
 const AddFilm = () => {
-    const [activeStep, setActiveStep] = React.useState(0);
+    const navigate = useNavigate()
+    const [activeStep, setActiveStep] = React.useState(0)
     const [filmData, setFilmData] = React.useState<FormData>()
-    const addFilmMutation  = useMutation(addFilm)
+    const [axiosError, setAxiosError] = React.useState("")
+    const addFilmMutation  = useMutation(addFilm, {
+        onSuccess: () => {
+            navigate('/films')
+        }, onError: (error: AxiosError) => {
+            setAxiosError(error.response?.statusText || "Axios Error: Unknown")
+            handlePrevious()
+        }
+    })
 
     const handleNext = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
+
+    const handlePrevious = () => {
+        setActiveStep((prevActiveStep) => prevActiveStep -1);
+    }
 
 
     function setFilmDataFunc(formData: FormData): void {
@@ -58,7 +73,7 @@ const AddFilm = () => {
                 ) : (
                     <React.Fragment>
                         <Grid>
-                            {activeStep === 0 && <AddFilmForm setFilmData={setFilmDataFunc} handleNext={handleNext} />}
+                            {activeStep === 0 && <AddFilmForm setFilmData={setFilmDataFunc} handleNext={handleNext} axiosError={axiosError} />}
                             {activeStep === 1 && <AddFilmImage submitFilm={submitFilm}/>}
                         </Grid>
                     </React.Fragment>

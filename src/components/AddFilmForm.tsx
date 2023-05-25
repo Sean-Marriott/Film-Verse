@@ -18,15 +18,15 @@ import {
     SelectChangeEvent, Stack
 } from "@mui/material";
 import {useQuery} from "react-query";
-import {useState} from "react";
 import MenuItem from "@mui/material/MenuItem";
-import {DateTimePicker, TimeField} from "@mui/x-date-pickers";
+import {MobileDateTimePicker, TimeField} from "@mui/x-date-pickers";
 import {getGenres} from "../api/filmsApi";
 import {Dayjs} from "dayjs";
 
 interface IAddFilmForm {
     setFilmData: (formData: FormData) => void;
     handleNext: () => void;
+    axiosError: string;
 }
 const AddFilmForm = (props: IAddFilmForm) => {
     const [filmTitle, setFilmTitle] = React.useState("")
@@ -38,7 +38,8 @@ const AddFilmForm = (props: IAddFilmForm) => {
     const [filmTitleError, setFilmTitleError] = React.useState(false)
     const [descriptionError, setDescriptionError] = React.useState(false)
     const [genreError, setGenreError] = React.useState(false)
-    const [axiosError, setAxiosError] = useState("")
+    const [ageRatingError, setAgeRatingError] = React.useState(false)
+    const [axiosError, setAxiosError] = React.useState(props.axiosError)
 
     const {data:genres, status:genresStatus, error:genresError} = useQuery("genres", getGenres)
 
@@ -76,6 +77,7 @@ const AddFilmForm = (props: IAddFilmForm) => {
         setFilmTitleError(false)
         setDescriptionError(false)
         setGenreError(false)
+        setAgeRatingError(false)
 
         if (filmTitle === "") {
             setFilmTitleError(true)
@@ -87,9 +89,14 @@ const AddFilmForm = (props: IAddFilmForm) => {
             valid = false
         }
 
-        if (genre === "") {
+        if (genre === "" || !genres.map((genre: Genre) => genre.genreId).includes(genre)) {
             setGenreError(true)
             valid = false
+        }
+
+        if (!ageRatings.includes(ageRating)) {
+            setAgeRatingError(true)
+            valid=false
         }
 
         return valid
@@ -198,6 +205,7 @@ const AddFilmForm = (props: IAddFilmForm) => {
                                     name="ageRating"
                                     labelId="ageRating-label"
                                     id="ageRating"
+                                    error={ageRatingError}
                                     value={ageRating}
                                     label="Age Rating"
                                     onChange={handleChangeAgeRating}
@@ -211,11 +219,18 @@ const AddFilmForm = (props: IAddFilmForm) => {
                                         </MenuItem>
                                     ))}
                                 </Select>
+                                {ageRatingError && (
+                                    <FormHelperText error id="ageRating-error">
+                                        Please select a valid age rating
+                                    </FormHelperText>
+                                )}
                             </FormControl>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <FormControl fullWidth>
-                                <DateTimePicker
+                                <MobileDateTimePicker
+                                    disablePast
+                                    format='DD-MM-YYYY HH:mm'
                                     slotProps={{textField: {name: "releaseDate", id:"releaseDate"}}}
                                     label="Release Date"
                                     value={releaseDate}
@@ -224,17 +239,18 @@ const AddFilmForm = (props: IAddFilmForm) => {
                             </FormControl>
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                            <TimeField
-                                name="runtime"
-                                id="runtime"
-                                label="Runtime"
-                                value={runtime}
-                                onChange={(newValue) => setRuntime(newValue)}
-                                format="HH:mm"
-                            />
+                            <FormControl fullWidth>
+                                <TimeField
+                                    name="runtime"
+                                    id="runtime"
+                                    label="Runtime"
+                                    value={runtime}
+                                    onChange={(newValue) => setRuntime(newValue)}
+                                    format="HH:mm"
+                                />
+                            </FormControl>
                         </Grid>
                     </Grid>
-                    {axiosError !== "" && <Grid><Typography component="h1" variant="h5"><Alert severity="error">{axiosError}</Alert></Typography></Grid>}
                     <Button
                         type="submit"
                         fullWidth
@@ -243,6 +259,7 @@ const AddFilmForm = (props: IAddFilmForm) => {
                     >
                         Next
                     </Button>
+                    {axiosError !== "" && <Grid item><Typography component="h1" variant="h5"><Alert severity="error">{axiosError}</Alert></Typography></Grid>}
                     <Grid container justifyContent="flex-end">
                         <Grid item>
                             <Link href="/login" variant="body2">

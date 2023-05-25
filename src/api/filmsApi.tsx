@@ -51,12 +51,27 @@ export const addFilm = async (formData: FormData) => {
         runtime: formData.get('runtime')? parseInt(formData.get('runtime') as string):undefined,
         ageRating: formData.get('ageRating')? formData.get('ageRating'):undefined
     })
-    console.log(submitData)
     const response = await filmsApi.post("/", submitData, {headers: {'X-Authorization': authtoken, 'Content-Type': 'application/json'}})
 
     return response.data
 
 }
+
+export const addReview = async (formData: FormData) => {
+    if (formData) {
+        const authtoken = localStorage.getItem('authToken')
+        const filmId = formData.get('filmId')
+
+        const submitData = JSON.stringify({
+            rating: parseFloat(formData.get('reviewRating') as string) || undefined,
+            review: formData.get('reviewText') || undefined
+        })
+        console.log(submitData)
+        const response = await filmsApi.post("/" + filmId + "/reviews", submitData, {headers: {'X-Authorization': authtoken, 'Content-Type': 'application/json'}})
+        return response.data
+    }
+}
+
 
 export const updateFilm = async (film: Film) => {
     return await filmsApi.patch('/${film.filmId}', film)

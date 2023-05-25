@@ -13,7 +13,7 @@ import {Alert, FormControl, FormHelperText, InputAdornment, InputLabel, Outlined
 import IconButton from "@mui/material/IconButton";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 import {useMutation} from "react-query";
-import {signup} from "../api/usersApi";
+import {login, signup} from "../api/usersApi";
 import {AxiosError} from "axios";
 import {useState} from "react";
 
@@ -31,10 +31,14 @@ const SignupForm = (props: ISignupForm) => {
     const [emailError, setEmailError] = React.useState(false)
     const [passwordError, setPasswordError] = React.useState(false)
     const [axiosError, setAxiosError] = useState("")
-
+    const loginMutation = useMutation(login)
     const signupMutation  = useMutation(signup, {
         onSuccess: () => {
             props.handleNext()
+            const form = new FormData()
+            form.set('email', email)
+            form.set('password', password)
+            loginMutation.mutate(form)
         },
         onError: (error: AxiosError) => {
             if (error.response?.status === 403) {

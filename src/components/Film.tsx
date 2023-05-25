@@ -2,9 +2,10 @@ import {AxiosError} from 'axios';
 import {useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import {
+    Alert,
     Avatar,
     Chip,
-    CircularProgress, Pagination,
+    CircularProgress, Modal, Pagination,
     Paper,
     Rating,
     Stack,
@@ -17,9 +18,25 @@ import CardMedia from "@mui/material/CardMedia";
 import Box from "@mui/material/Box";
 import ReviewObject from "./ReviewObject";
 import SimilarFilmObject from"./SimilarFilmObject"
-import {useQuery} from "react-query";
-import {getFilm, getFilmsParametrised, getGenres, getReviews} from "../api/filmsApi";
+import {useMutation, useQuery, useQueryClient} from "react-query";
+import {addReview, getFilm, getFilmsParametrised, getGenres, getReviews} from "../api/filmsApi";
+import AddCommentIcon from '@mui/icons-material/AddComment';
+import IconButton from "@mui/material/IconButton";
+import TextField from "@mui/material/TextField";
+import SendIcon from '@mui/icons-material/Send';
 
+const style = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    borderRadius: '25px',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+};
 interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
@@ -67,10 +84,14 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const Film = () => {
+    const queryClient = useQueryClient()
+    const [axiosError, setAxiosError] = useState("")
     const { id } = useParams<{ id: string }>();
     const [tab, setTab] = React.useState(1);
     const [page, setPage] = useState(1);
     const similarFilmsPerPage = useWindowSize();
+    const [openModal, setOpenModal] = React.useState(false);
+    const [loggedInUserId, setLoggedInUserId] = React.useState(localStorage.getItem('userId'))
     const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
     const { data: film, status: filmStatus, error: filmError  } = useQuery(['film', id], () => getFilm(id? id:"-1"))
     const { data: reviews, status: reviewStatus, error: reviewError } = useQuery(['reviews', id], () => getReviews(id? id:"-1"))
@@ -80,6 +101,19 @@ const Film = () => {
     const { data: similarFilmDirectorId, status: similarFilmDirectorIdStatus, error:similarFilmDirectorIdError } = useQuery(['similarFilmDirectorId', id], () => getFilmsParametrised("", [], [], "RELEASED_ASC", film.directorId), {
         select: (data) => data.films,
         enabled: !!film})
+
+    const addReviewMutation  = useMutation(addReview, {
+        onSuccess: () => {
+            console.log("SUCCESS")
+            void queryClient.invalidateQueries({ queryKey: ['reviews'] })
+            setOpenModal(false)
+            // navigate('/films')
+
+        },
+        onError: (error: AxiosError) => {
+            setAxiosError(error.response?.statusText || "Axios Error: Unknown")
+        },
+    })
 
     if (genresStatus === "loading" || filmStatus === "loading" || reviewStatus === "loading" || similarFilmGenreIdStatus === "loading" || similarFilmDirectorIdStatus === "loading") {
         return <Grid container mt={8} justifyContent="center"><CircularProgress/></Grid>
@@ -129,6 +163,9 @@ const Film = () => {
 
     const pageCount = Math.ceil(similarFilms.length / similarFilmsPerPage)
 
+    const handleOpenModal = () => setOpenModal(true);
+    const handleCloseModal = () => setOpenModal(false);
+
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTab(newValue);
     };
@@ -136,7 +173,6 @@ const Film = () => {
     const review_rows = () => reviews.map((review: Review) => <ReviewObject key={review.reviewerId + review.timestamp} review={review}/>)
     const similar_film_rows = () => {
         if (page > pageCount) { setPage((page) => page-1) }
-        console.log(similarFilms.slice((page - 1) * similarFilmsPerPage, page * similarFilmsPerPage))
         return similarFilms.slice((page - 1) * similarFilmsPerPage, page * similarFilmsPerPage).map((film: Film) => <SimilarFilmObject key={film.filmId} film={film} getGenre={getGenre} convertToDate={convertToDate}/>)
     }
 
@@ -158,6 +194,16 @@ const Film = () => {
         setPage(value);
     }
 
+    const handleReviewSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        if (id) {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget)
+            formData.set("filmId", id)
+            addReviewMutation.mutate(formData)
+        }
+    }
+
+
     return (
         <Grid container display="flex" justifyContent="center"  alignItems="center">
             <Grid xs={12} sx={{m:6, ml:10, mr:10}}>
@@ -178,17 +224,19 @@ const Film = () => {
                                 <Typography variant="subtitle2">{convertToDate(film.releaseDate)}</Typography>
                             </Grid>
                             <Grid xs={12}>
-                                <Tabs
-                                    value={tab}
-                                    onChange={handleTabChange}
-
-                                    textColor="secondary"
-                                    indicatorColor="secondary"
-                                >
-                                    <Tab value={1} label="Overview" />
-                                    <Tab value={2} label="Reviews" />
-                                    <Tab value={3} label="Similar Films" />
-                                </Tabs>
+                                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                                    <Tabs
+                                        value={tab}
+                                        onChange={handleTabChange}
+                                        textColor="secondary"
+                                        indicatorColor="secondary"
+                                    >
+                                        <Tab value={1} label="Overview" />
+                                        <Tab value={2} label="Reviews" />
+                                        <Tab value={3} label="Similar Films" />
+                                    </Tabs>
+                                    {tab === 2 && loggedInUserId && <IconButton aria-label="addReview" size="small" onClick={handleOpenModal}><AddCommentIcon color="secondary"/></IconButton>}
+                                </Stack>
                             </Grid>
                             <TabPanel value={tab} index={1}>
                                 <Grid container direction="column" sx={{p:1}} rowSpacing={2}>
@@ -232,6 +280,37 @@ const Film = () => {
                     </Grid>
                 </Paper>
             </Grid>
+            {loggedInUserId && <Modal
+                open={openModal}
+                onClose={handleCloseModal}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box component="form" onSubmit={handleReviewSubmit} sx={style}>
+                    <Grid container spacing={2}>
+                        <Grid xs={12}>
+                            <Typography variant="h6">Add Review: </Typography>
+                        </Grid>
+                        <Grid xs={12}>
+                            <Rating name="reviewRating" precision={0.5} max={10}/>
+                        </Grid>
+                        <Grid xs={12}>
+                            <TextField
+                                fullWidth
+                                name="reviewText"
+                                id="outlined-multiline-static"
+                                multiline
+                                rows={4}
+                                placeholder="Wow, what an amazing movie!!"
+                            />
+                        </Grid>
+                        <Grid xs={12} container justifyContent='flex-end'>
+                            {axiosError !== "" && <Alert sx={{mr: 3}} severity="error">{axiosError}</Alert>}
+                            <IconButton aria-label="addReview" size="small" type="submit"><SendIcon color="secondary"/></IconButton>
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Modal>}
         </Grid>
     )
 

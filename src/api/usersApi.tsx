@@ -23,8 +23,8 @@ export const signup = async (formData: FormData) => {
         lastName: formData.get('lastName'),
         firstName: formData.get('firstName')
     })
-    console.log(submitData)
     const response = await usersApi.post('http://localhost:4941/api/v1/users/register', submitData, {headers: {'Content-Type': 'application/json'}})
+    console.log(response)
     localStorage.setItem('authToken', response.data.token)
     localStorage.setItem('userId', response.data.userId)
     return response.data
