@@ -13,7 +13,7 @@ import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import {Alert, Link, Snackbar} from "@mui/material";
-import {useQuery} from "react-query";
+import {useQuery, useQueryClient} from "react-query";
 import {logout} from "../api/usersApi";
 import {useNavigate} from "react-router-dom";
 import {AxiosError} from "axios";
@@ -21,6 +21,7 @@ import {useUserStore} from "../store";
 
 
 const Navbar = () => {
+    const queryClient = useQueryClient()
     const currentUserId = useUserStore(state => state.userId)
     const currentAuthToken = useUserStore(state => state.authToken)
     const removeAuthToken = useUserStore((state) => state.removeAuthToken)
@@ -43,6 +44,7 @@ const Navbar = () => {
         onSettled: () => {
             removeAuthToken()
             removeUserId()
+            void queryClient.invalidateQueries({ queryKey: ['profile'] })
         }})
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);

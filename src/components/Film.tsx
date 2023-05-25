@@ -88,7 +88,6 @@ function TabPanel(props: TabPanelProps) {
 const Film = () => {
     const loggedInUserId = useUserStore(state => state.userId)
     const loggedInUserToken= useUserStore(state => state.authToken)
-
     const queryClient = useQueryClient()
     const [axiosError, setAxiosError] = useState("")
     const { id } = useParams<{ id: string }>();

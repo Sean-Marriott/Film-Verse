@@ -4,6 +4,10 @@ const usersApi = axios.create({
     baseURL: "http://localhost:4941/api/v1/users"
 })
 
+export const getUser = async (userId: number, loggedInUserToken: string) => {
+    const response = await usersApi.get("/" + userId, {headers: {'X-Authorization': loggedInUserToken}})
+    return response.data
+}
 export const login = async (formData: FormData) => {
     const submitData = JSON.stringify({
         "email": formData.get('email'),
