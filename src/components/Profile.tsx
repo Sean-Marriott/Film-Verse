@@ -27,6 +27,7 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from '@mui/icons-material/Edit';
+import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 
 interface FormData {
@@ -295,7 +296,12 @@ const Profile = () => {
                             <Grid container xs={12} justifyContent="center" overflow="auto">
                                 <Typography variant="h4">{user.email}</Typography>
                             </Grid>
-                            <Grid container xs={12} mt={20} justifyContent="end">
+                            <Grid container spacing={2} xs={12} mt={20} justifyContent="end">
+                                <Grid>
+                                    <Button variant="outlined" endIcon={<AddAPhotoIcon />} href="/updateProfilePicture">
+                                        Update Profile Picture
+                                    </Button>
+                                </Grid>
                                 <Grid>
                                     <Button variant="outlined" endIcon={<EditNoteIcon />} onClick={handleOpenModal}>
                                         Edit
@@ -435,7 +441,7 @@ const Profile = () => {
                             </Grid>
                             <Grid xs={12} container justifyContent='flex-end'>
                                 {editProfileAxiosError !== "" && <Alert sx={{mr: 3}} severity="error">{editProfileAxiosError}</Alert>}
-                                <IconButton aria-label="addReview" size="small" type="submit"><EditIcon color="secondary"/></IconButton>
+                                <IconButton aria-label="edit" size="small" type="submit"><EditIcon color="secondary"/></IconButton>
                             </Grid>
                         </Grid>
                     </Grid>

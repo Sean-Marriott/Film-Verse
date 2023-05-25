@@ -16,6 +16,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import Profile from "./components/Profile";
 import PrivateRoutes from "./utils/PrivateRoutes";
 import StrictUnAuthRoutes from "./utils/StrictUnAuthRoutes";
+import UpdateProfilePicture from "./components/UpdateProfilePicture";
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
@@ -33,6 +34,7 @@ root.render(
                     <Routes>
                         <Route element={<PrivateRoutes />}>
                             <Route path="/profile" element={<Profile/>}></Route>
+                            <Route path="/updateProfilePicture" element={<UpdateProfilePicture/>}></Route>
                             <Route path="/addFilm" element={<AddFilm/>}></Route>
                         </Route>
                         <Route element={<StrictUnAuthRoutes />}>

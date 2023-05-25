@@ -54,7 +54,7 @@ const AddPicture = () => {
             </Snackbar>
             <Avatar
                 alt="User Profile Picture"
-                src={imageError ? defaultImage:"defaultProfilePic.png"}
+                src={imageError ? "defaultProfilePic.png" : defaultImage}
                 onError={handleImageError}
                 sx={{ width: 200, height: 200, border:2 }}
             />
