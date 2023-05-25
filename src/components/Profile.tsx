@@ -1,23 +1,107 @@
 import Grid from "@mui/material/Unstable_Grid2";
-import React, {useState} from "react";
+import React, {ChangeEvent, FormEvent, useState} from "react";
 import Button from "@mui/material/Button";
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import {useUserStore} from "../store";
 import CardMedia from "@mui/material/CardMedia";
 import {useQuery} from "react-query";
 import {getUser} from "../api/usersApi";
-import {CircularProgress, Pagination, Paper, Stack, Tab, Tabs, Typography} from "@mui/material";
+import {
+    CircularProgress, FormControl, InputAdornment,
+    InputLabel,
+    Modal, OutlinedInput,
+    Pagination,
+    Paper,
+    Stack,
+    Tab,
+    Tabs,
+    Typography
+} from "@mui/material";
 import {AxiosError} from "axios";
 import TabPanel from "./TabPanel";
 import {useWindowSize} from "../hooks/useWindowSize";
 import {getFilmsParametrised, getGenres} from "../api/filmsApi";
 import SimilarFilmObject from "./SimilarFilmObject";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
+import EditIcon from '@mui/icons-material/Edit';
+import {Visibility, VisibilityOff} from "@mui/icons-material";
+
+interface FormData {
+    firstName: string,
+    lastName: string,
+    email: string,
+    currentPassword: string,
+    newPassword: string
+}
+
+const initialFormData: FormData = {
+    firstName: '',
+    lastName: '',
+    email:'',
+    currentPassword:'',
+    newPassword:''
+}
+
+const style = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    borderRadius: '25px',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+};
 
 const Profile = () => {
+    const [formData, setFormData] = useState<FormData>(initialFormData);
+    const [openModal, setOpenModal] = React.useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = React.useState(false);
+    const handleClickShowCurrentPassword= () => setShowCurrentPassword((show) => !show);
+    const handleMouseDownCurrentPassword = (event: React.MouseEvent<HTMLButtonElement>) => {event.preventDefault();};
+
+    const [showNewPassword, setShowNewPassword] = React.useState(false);
+    const handleClickShowNewPassword= () => setShowNewPassword((show) => !show);
+    const handleMouseDownNewPassword = (event: React.MouseEvent<HTMLButtonElement>) => {event.preventDefault();};
+    const handleOpenModal = () => setOpenModal(true);
+    const handleCloseModal = () => setOpenModal(false);
+    const handleChange = (e: ChangeEvent<HTMLInputElement>):void => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        })
+    }
+
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) : void => {
+        e.preventDefault()
+        let formData = new FormData(e.currentTarget)
+        console.log(formData.get("firstName"))
+        console.log(formData.get("lastName"))
+        console.log(formData.get("email"))
+        console.log(formData.get("currentPassword"))
+        console.log(formData.get("newPassword"))
+    }
+
+
     const currentUserId = useUserStore(state => state.userId)
     const currentUserToken = useUserStore(state => state.authToken)
     const [userAxiosError, setUserAxiosError] = useState("")
     const { data: user, status: userStatus} = useQuery('profile', () => getUser(currentUserId, currentUserToken), {
+        onSuccess: (data) => {
+          const preExistingData: FormData = {
+              firstName: data.firstName,
+              lastName: data.lastName,
+              email: data.email,
+              currentPassword: '',
+              newPassword: ''
+
+          }
+          setFormData(preExistingData)
+        },
         onError: (error: AxiosError) => {
             if (error.response) {setUserAxiosError("Unable to get user: " + error.response.statusText)}
             else {setUserAxiosError("Unable to get user: " + error.message)}
@@ -160,7 +244,7 @@ const Profile = () => {
                             </Grid>
                             <Grid container xs={12} mt={20} justifyContent="end">
                                 <Grid>
-                                    <Button variant="outlined" endIcon={<EditNoteIcon />}>
+                                    <Button variant="outlined" endIcon={<EditNoteIcon />} onClick={handleOpenModal}>
                                         Edit
                                     </Button>
                                 </Grid>
@@ -187,6 +271,105 @@ const Profile = () => {
                     </Grid>
                 </Grid>
             </Grid>
+            <Modal
+                open={openModal}
+                onClose={handleCloseModal}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box component="form" onSubmit={handleSubmit} sx={style}>
+                    <Grid container spacing={2}>
+                        <Grid xs={12}>
+                            <Typography variant="h6">Edit Profile: </Typography>
+                        </Grid>
+                        <Grid container>
+                            <Grid xs={6}>
+                                <TextField
+                                    id="firstName"
+                                    label="First Name"
+                                    variant="outlined"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                />
+                            </Grid>
+                            <Grid xs={6}>
+                                <TextField
+                                    id="lastName"
+                                    label="Last Name"
+                                    variant="outlined"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                />
+                            </Grid>
+                            <Grid xs={12}>
+                                <TextField
+                                    fullWidth
+                                    id="email"
+                                    label="Email"
+                                    variant="outlined"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                />
+                            </Grid>
+                            <Grid xs={12}>
+                                <FormControl sx={{ width: '100%' }} variant="outlined">
+                                    <InputLabel htmlFor="outlined-adornment-current-password">Current Password  *</InputLabel>
+                                    <OutlinedInput
+                                        name="currentPassword"
+                                        id="outlined-adornment-current-password"
+                                        type={showCurrentPassword ? 'text' : 'password'}
+                                        onChange={handleChange}
+                                        endAdornment={
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    aria-label="toggle password visibility"
+                                                    onClick={handleClickShowCurrentPassword}
+                                                    onMouseDown={handleMouseDownCurrentPassword}
+                                                    edge="end"
+                                                >
+                                                    {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                        label="Current Password  *"
+                                    />
+                                </FormControl>
+                            </Grid>
+                            <Grid xs={12}>
+                                <FormControl sx={{ width: '100%' }} variant="outlined">
+                                    <InputLabel htmlFor="outlined-adornment-new-password">New Password  *</InputLabel>
+                                    <OutlinedInput
+                                        name="newPassword"
+                                        id="outlined-adornment-new-password"
+                                        type={showNewPassword ? 'text' : 'password'}
+                                        onChange={handleChange}
+                                        endAdornment={
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    aria-label="toggle password visibility"
+                                                    onClick={handleClickShowNewPassword}
+                                                    onMouseDown={handleMouseDownNewPassword}
+                                                    edge="end"
+                                                >
+                                                    {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                        label="New Password  *"
+                                    />
+                                </FormControl>
+                            </Grid>
+                            <Grid xs={12} container justifyContent='flex-end'>
+                                {/*{axiosError !== "" && <Alert sx={{mr: 3}} severity="error">{axiosError}</Alert>}*/}
+                                <IconButton aria-label="addReview" size="small" type="submit"><EditIcon color="secondary"/></IconButton>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Modal>
         </Paper>
 
     )
