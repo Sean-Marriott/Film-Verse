@@ -10,7 +10,7 @@ import MovieIcon from '@mui/icons-material/Movie';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import {
-    Alert,
+    Alert, CircularProgress,
     FormControl,
     FormHelperText,
     InputLabel,
@@ -102,6 +102,18 @@ const AddFilmForm = (props: IAddFilmForm) => {
     const handleChangeAgeRating = (event: SelectChangeEvent) => {
         setAgeRating(event.target.value as string);
     };
+
+    if (genresStatus === "loading") {
+        return(
+            <Box m={6}><CircularProgress/></Box>
+        )
+    }
+
+    if (genresStatus === "error") {
+        return(
+            <Box m={6}><Typography variant="h4" color="error">{"Unable to get genres: " + genresError}</Typography></Box>
+        )
+    }
 
     return (
         <Container component="main" maxWidth="xs">
