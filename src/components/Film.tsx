@@ -28,6 +28,8 @@ import Button from "@mui/material/Button";
 import {useUserStore} from "../store";
 import TabPanel from "./TabPanel";
 import {useWindowSize} from "../hooks/useWindowSize"
+import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -51,7 +53,7 @@ const Film = () => {
     const [tab, setTab] = React.useState(1);
     const [page, setPage] = useState(1);
     const similarFilmsPerPage = useWindowSize();
-    const [openModal, setOpenModal] = React.useState(false);
+    const [openReviewModal, setOpenReviewModal] = React.useState(false);
     const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
     const { data: film, status: filmStatus, error: filmError  } = useQuery(['film', id], () => getFilm(id? id:"-1"))
     const { data: reviews, status: reviewStatus, error: reviewError } = useQuery(['reviews', id], () => getReviews(id? id:"-1"))
@@ -69,9 +71,7 @@ const Film = () => {
         onSuccess: () => {
             console.log("SUCCESS")
             void queryClient.invalidateQueries({ queryKey: ['reviews'] })
-            setOpenModal(false)
-            // navigate('/films')
-
+            setOpenReviewModal(false)
         },
         onError: (error: AxiosError) => {
             setAxiosError(error.response?.statusText || "Axios Error: Unknown")
@@ -126,8 +126,8 @@ const Film = () => {
 
     const pageCount = Math.ceil(similarFilms.length / similarFilmsPerPage)
 
-    const handleOpenModal = () => setOpenModal(true);
-    const handleCloseModal = () => setOpenModal(false);
+    const handleOpenReviewModal = () => setOpenReviewModal(true);
+    const handleCloseReviewModal = () => setOpenReviewModal(false);
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTab(newValue);
@@ -198,7 +198,7 @@ const Film = () => {
                                         <Tab value={2} label="Reviews" />
                                         <Tab value={3} label="Similar Films" />
                                     </Tabs>
-                                    {tab === 2 && <IconButton aria-label="addReview" size="small" onClick={handleOpenModal}><AddCommentIcon color="secondary"/></IconButton>}
+                                    {tab === 2 && <IconButton aria-label="addReview" size="small" onClick={handleOpenReviewModal}><AddCommentIcon color="secondary"/></IconButton>}
                                 </Stack>
                             </Grid>
                             <TabPanel value={tab} index={1}>
@@ -222,6 +222,19 @@ const Film = () => {
                                             <Avatar alt="Director Profile Pic" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
                                         </Grid>
                                     </Grid>
+                                    {loggedInUserId === film.directorId &&
+                                        <Grid container spacing={2} xs={12} mt={12} justifyContent="end">
+                                            <Grid>
+                                                <Button variant="outlined" endIcon={<AddAPhotoIcon />} href={"/updateFilmImage/" + id}>
+                                                    Update Hero Image
+                                                </Button>
+                                            </Grid>
+                                            <Grid>
+                                                <Button variant="outlined" endIcon={<EditNoteIcon />}>
+                                                    Edit
+                                                </Button>
+                                            </Grid>
+                                        </Grid>}
                                 </Grid>
                             </TabPanel>
                             <TabPanel value={tab} index={2}>
@@ -244,8 +257,8 @@ const Film = () => {
                 </Paper>
             </Grid>
             <Modal
-                open={openModal}
-                onClose={handleCloseModal}
+                open={openReviewModal}
+                onClose={handleCloseReviewModal}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
