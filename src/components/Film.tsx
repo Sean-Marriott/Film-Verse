@@ -26,6 +26,7 @@ import TextField from "@mui/material/TextField";
 import SendIcon from '@mui/icons-material/Send';
 import Button from "@mui/material/Button";
 import {useUserStore} from "../store";
+import TabPanel from "./TabPanel";
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -39,11 +40,6 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
 
 function useWindowSize() {
     const[similarFilmsPerPage, setSimilarFilmsPerPage] = useState(1)
@@ -64,25 +60,6 @@ function useWindowSize() {
         }
     }, [])
     return similarFilmsPerPage;
-}
-
-function TabPanel(props: TabPanelProps) {
-    const { children, value, index, ...other } = props;
-    return (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            id={`simple-tabpanel-${index}`}
-            aria-labelledby={`simple-tab-${index}`}
-            {...other}
-        >
-            {value === index && (
-                <Box>
-                    {children}
-                </Box>
-            )}
-        </div>
-    );
 }
 
 const Film = () => {

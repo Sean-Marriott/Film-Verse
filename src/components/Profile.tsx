@@ -8,30 +8,7 @@ import {useQuery} from "react-query";
 import {getUser} from "../api/usersApi";
 import {CircularProgress, Paper, Stack, Tab, Tabs, Typography} from "@mui/material";
 import {AxiosError} from "axios";
-
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
-function TabPanel(props: TabPanelProps) {
-    const { children, value, index, ...other } = props;
-    return (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            id={`simple-tabpanel-${index}`}
-            aria-labelledby={`simple-tab-${index}`}
-            {...other}
-        >
-            {value === index && (
-                <Grid container>
-                    {children}
-                </Grid>
-            )}
-        </div>
-    );
-}
+import TabPanel from "./TabPanel";
 
 const Profile = () => {
     const currentUserId = useUserStore(state => state.userId)
