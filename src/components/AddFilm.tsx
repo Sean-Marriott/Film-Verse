@@ -6,23 +6,36 @@ import Typography from '@mui/material/Typography';
 import Grid from "@mui/material/Unstable_Grid2";
 import AddFilmForm from "./AddFilmForm";
 import {useMutation} from "react-query";
-import {addFilm} from "../api/filmsApi";
+import {addFilm, uploadFilmPic} from "../api/filmsApi";
 import AddFilmImage from "./AddFilmImage";
 import {AxiosError} from "axios";
 import {useNavigate} from "react-router-dom";
+import {Alert, Snackbar} from "@mui/material";
 
 const steps = ['Add Film', 'Add a film hero image'];
 
 const AddFilm = () => {
     const navigate = useNavigate()
+    let filmImage: File
     const [activeStep, setActiveStep] = React.useState(0)
     const [filmData, setFilmData] = React.useState<FormData>()
+    const [openErrorSnackbar, setOpenErrorSnackbar] = React.useState(false)
+    const [imageUploadAxiosError, setImageUploadAxiosError] = React.useState("")
     const [axiosError, setAxiosError] = React.useState("")
+    const uploadFilmPicMutation = useMutation(uploadFilmPic, {
+        onError: (error: AxiosError) => {
+            console.log(error)
+            if (error.response) {setImageUploadAxiosError("Unable to upload image: " + error.response.statusText)}
+            else {setImageUploadAxiosError("Unable to upload image: " + error.message)}
+            setOpenErrorSnackbar(true)
+        }
+    })
     const addFilmMutation  = useMutation(addFilm, {
-        onSuccess: () => {
-            navigate('/films')
+        onSuccess: (data) => {
+            navigate('/film/' + data.filmId)
         }, onError: (error: AxiosError) => {
-            setAxiosError(error.response?.statusText || "Axios Error: Unknown")
+            if (error.response) {setAxiosError("Unable to submit film: " + error.response.statusText)}
+            else {setAxiosError("Unable to submit film: " + error.message)}
             handlePrevious()
         }
     })
@@ -41,14 +54,29 @@ const AddFilm = () => {
         setFilmData(formData)
     }
 
+    function setFilmImageFunc(receivedFilmImage: File) {
+        filmImage = receivedFilmImage
+    }
+
+    const handleCloseErrorSnackbar = () => {
+        setOpenErrorSnackbar(false)
+    };
+
     function submitFilm() {
         if (filmData) {
-            addFilmMutation.mutate(filmData)
+            addFilmMutation.mutateAsync(filmData).then(data => {
+                uploadFilmPicMutation.mutate({filmId: data.filmId, image: filmImage})
+            })
         }
     }
 
     return (
         <Grid container m={3}>
+            <Snackbar open={openErrorSnackbar} autoHideDuration={6000} onClose={handleCloseErrorSnackbar} anchorOrigin={{ vertical:"bottom", horizontal:"left" }}>
+                <Alert onClose={handleCloseErrorSnackbar} severity="error" sx={{ width: '100%' }}>
+                    {imageUploadAxiosError}
+                </Alert>
+            </Snackbar>
             <Grid xs={12}>
                 <Stepper activeStep={activeStep}>
                     {steps.map((label) => {
@@ -74,7 +102,7 @@ const AddFilm = () => {
                     <React.Fragment>
                         <Grid>
                             {activeStep === 0 && <AddFilmForm setFilmData={setFilmDataFunc} handleNext={handleNext} axiosError={axiosError} />}
-                            {activeStep === 1 && <AddFilmImage submitFilm={submitFilm}/>}
+                            {activeStep === 1 && <AddFilmImage submitFilm={submitFilm} setFilmImage={setFilmImageFunc}/>}
                         </Grid>
                     </React.Fragment>
                 )}

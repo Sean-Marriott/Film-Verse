@@ -17,8 +17,6 @@ import {useNavigate} from "react-router-dom";
 import {useUserStore} from "../store";
 
 const Login = () => {
-    const loggedInUserId = useUserStore(state => state.userId)
-    const loggedInUserToken = useUserStore(state => state.authToken)
     const setAuthToken = useUserStore((state) => state.setAuthToken)
     const setUserId = useUserStore((state) => state.setUserId)
     const navigate = useNavigate()
@@ -27,9 +25,6 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [passwordErrorMessage, setPasswordErrorMessage] = useState("")
     const [axiosError, setAxiosError] = useState("")
-
-    console.log(loggedInUserId)
-    console.log(loggedInUserToken)
 
     const mutation  = useMutation(login, {
         onSuccess: (data) => {

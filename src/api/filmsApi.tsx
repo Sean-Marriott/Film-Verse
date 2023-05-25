@@ -86,4 +86,16 @@ export const deleteFilm = async (filmId: number) => {
     return await filmsApi.delete('/${film.filmId}')
 }
 
+interface IUploadFilm {
+    image: File
+    filmId: number
+}
+export const uploadFilmPic = async (props: IUploadFilm) => {
+    let loggedInUserToken = localStorage.getItem("authToken")
+    if (props.image && loggedInUserToken!== "") {
+        const response = await filmsApi.put("/" + props.filmId + "/image", props.image, {headers: {'X-Authorization': loggedInUserToken, 'Content-Type': props.image.type}}  )
+        return response.data
+    }
+}
+
 export default filmsApi
