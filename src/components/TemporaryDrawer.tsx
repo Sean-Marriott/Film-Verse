@@ -8,7 +8,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import MenuIcon from "@mui/icons-material/Menu";
 import IconButton from "@mui/material/IconButton";
-import {useUserStore} from "../store";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import TheatersIcon from '@mui/icons-material/Theaters';
 

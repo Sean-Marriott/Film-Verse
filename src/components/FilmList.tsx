@@ -13,6 +13,7 @@ import MenuItem from "@mui/material/MenuItem";
 import SearchIcon from "@mui/icons-material/Search";
 import {useQuery} from "react-query";
 import {getFilmsParametrised, getGenres} from "../api/filmsApi";
+import Typography from "@mui/material/Typography";
 
 const FilmList = () => {
     const [searchTerm, setSearchTerm] = React.useState('')
@@ -194,10 +195,10 @@ const FilmList = () => {
                 </FormControl>
                 </Grid>
             </Grid>
-            <Grid container xs={12} spacing={6} display="flex" justifyContent="center"  alignItems="center" disableEqualOverflow>
+            <Grid container xs={12} spacing={6} display="flex" justifyContent="center" alignItems="center" disableEqualOverflow>
                 { filmsStatus === "loading" && <CircularProgress />}
-                { filmsStatus === "error" && <p>{filmError()}</p>}
-                { genresStatus === "error" && <p>{genreError()}</p>}
+                { filmsStatus === "error" && <Grid xs={12}><Typography variant="h5" color="error" align="center">{filmError()}</Typography></Grid>}
+                { genresStatus === "error" && <Grid xs={12}><Typography variant="h5" color="error" align="center">{genreError()}</Typography></Grid>}
                 { filmsStatus === "success" && film_rows()}
             </Grid>
             <Grid xs={12} sx={{mt:3}} display="flex" justifyContent="center" alignItems="center">

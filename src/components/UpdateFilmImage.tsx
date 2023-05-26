@@ -14,7 +14,6 @@ const UpdateFilmImage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate()
     const currentUserId = useUserStore(state => state.userId)
-    const [profileImage, setProfileImage] = useState<File | null> (null)
     const [openErrorSnackbar, setOpenErrorSnackbar] = React.useState(false)
     const [imageUploadAxiosError, setImageUploadAxiosError] = React.useState("")
     const [imageError, setImageError] = useState(false);
@@ -52,7 +51,6 @@ const UpdateFilmImage = () => {
 
     const handleFilmImageChange = (event: ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
-            setProfileImage(event.target.files[0])
             if (event.target.files[0] && id) {
                 uploadFilmImageMutation.mutate({image: event.target.files[0], filmId: parseInt(id as string)})
             }

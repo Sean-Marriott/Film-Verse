@@ -11,7 +11,6 @@ import {useNavigate} from "react-router-dom";
 const AddPicture = () => {
     const navigate = useNavigate()
     const currentUserId = useUserStore(state => state.userId)
-    const [profileImage, setProfileImage] = useState<File | null> (null)
     const [openErrorSnackbar, setOpenErrorSnackbar] = React.useState(false)
     const [imageUploadAxiosError, setImageUploadAxiosError] = React.useState("")
     const [imageError, setImageError] = useState(false);
@@ -45,7 +44,6 @@ const AddPicture = () => {
     const handleProfileImageChange = (event: ChangeEvent<HTMLInputElement>) => {
         console.log(event.target.files)
         if (event.target.files && event.target.files.length > 0) {
-            setProfileImage(event.target.files[0])
             if (event.target.files[0]) {
                 uploadProfilePicMutation.mutate(event.target.files[0])
             }
