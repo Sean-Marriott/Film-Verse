@@ -21,11 +21,10 @@ const FilmList = () => {
     const [filterAgeRatings, setFilterAgeRatings] = React.useState < Array < string >> ([])
     const [page, setPage] = useState(1)
     const FILMS_PER_PAGE = 10;
-
     const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
     const { data, status: filmsStatus, error: filmsError } = useQuery(
-        ['films', searchTerm, sort, filterGenres, filterAgeRatings],
-        () => getFilmsParametrised(searchTerm, filterGenres, filterAgeRatings, sort, "", ""))
+        ['films', page, searchTerm, sort, filterGenres, filterAgeRatings],
+        () => getFilmsParametrised(searchTerm, filterGenres, filterAgeRatings, sort, "", "", ((page - 1) * FILMS_PER_PAGE).toString(), FILMS_PER_PAGE.toString()))
 
     const ageRatings = [
         "G",
@@ -99,6 +98,11 @@ const FilmList = () => {
     function genreError(): string {
         const genreError = genresError as Error | AxiosError
         return "Error retrieving genres: " + genreError.message
+    }
+
+    const film_rows = () => {
+        if (page > Math.ceil(data.count/FILMS_PER_PAGE) && page > 1) { setPage((page) => page-1) }
+        return data.films.map((film: Film) => (<Grid key={film.filmId}><FilmListObject film={film} getGenre={getGenre} convertToDate={convertToDate}/></Grid>))
     }
 
     return (
@@ -194,7 +198,7 @@ const FilmList = () => {
                 { filmsStatus === "loading" && <CircularProgress />}
                 { filmsStatus === "error" && <p>{filmError()}</p>}
                 { genresStatus === "error" && <p>{genreError()}</p>}
-                { filmsStatus === "success" && data.films?.slice((page - 1) * FILMS_PER_PAGE, page * FILMS_PER_PAGE).map((film: Film) => (<Grid key={film.filmId}><FilmListObject film={film} getGenre={getGenre} convertToDate={convertToDate}/></Grid>))}
+                { filmsStatus === "success" && film_rows()}
             </Grid>
             <Grid xs={12} sx={{mt:3}} display="flex" justifyContent="center" alignItems="center">
                 { filmsStatus === "success" && <Pagination count={Math.ceil(data.count/FILMS_PER_PAGE)} page={page} onChange={handlePageChange} />}

@@ -111,10 +111,10 @@ const Film = () => {
         }, enabled: !!genres
     })
     const { data: reviews, status: reviewStatus, error: reviewError } = useQuery(['reviews', id], () => getReviews(id? id:"-1"))
-    const { data: similarFilmGenreId, status: similarFilmGenreIdStatus, error:similarFilmGenreIdError } = useQuery(['similarFilmGenreId', id], () => getFilmsParametrised("", film.genreId, [], "RELEASED_ASC", "", ""), {
+    const { data: similarFilmGenreId, status: similarFilmGenreIdStatus, error:similarFilmGenreIdError } = useQuery(['similarFilmGenreId', id], () => getFilmsParametrised("", film.genreId, [], "RELEASED_ASC", "", "", "", ""), {
         select: (data) => data.films,
         enabled: !!film})
-    const { data: similarFilmDirectorId, status: similarFilmDirectorIdStatus, error:similarFilmDirectorIdError } = useQuery(['similarFilmDirectorId', id], () => getFilmsParametrised("", [], [], "RELEASED_ASC", film.directorId, ""), {
+    const { data: similarFilmDirectorId, status: similarFilmDirectorIdStatus, error:similarFilmDirectorIdError } = useQuery(['similarFilmDirectorId', id], () => getFilmsParametrised("", [], [], "RELEASED_ASC", film.directorId, "", "", ""), {
         select: (data) => data.films,
         enabled: !!film})
 
@@ -122,6 +122,7 @@ const Film = () => {
         onSuccess: () => {
             console.log("SUCCESS")
             void queryClient.invalidateQueries({ queryKey: ['reviews'] })
+            void queryClient.invalidateQueries({ queryKey: ['film'] })
             setOpenReviewModal(false)
         },
         onError: (error: AxiosError) => {
@@ -370,6 +371,7 @@ const Film = () => {
                                         <Grid>
                                             <Stack spacing={1} direction="row" alignItems="center">
                                                 <Chip label={getGenre(film.genreId)} variant="outlined" />
+                                                <Chip label={film.numReviews + " Reviews"} variant="outlined" />
                                                 <Rating max={10} name="half-rating-read" defaultValue={film.rating} precision={0.5} readOnly />
                                             </Stack>
                                         </Grid>
@@ -382,7 +384,7 @@ const Film = () => {
                                             <Typography variant="body1">{film.directorFirstName + " " + film.directorLastName}</Typography>
                                         </Grid>
                                         <Grid>
-                                            <Avatar alt="Director Profile Pic" src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
+                                            <Avatar alt={film.directorFirstName + " profile picture"} src={"http://localhost:4941/api/v1/users/" + film.directorId +"/image"} />
                                         </Grid>
                                     </Grid>
                                     {loggedInUserId === film.directorId &&
@@ -437,7 +439,7 @@ const Film = () => {
                         </Grid>
                         {loggedInUserId !== -1 && <Grid container>
                             <Grid xs={12}>
-                                <Rating name="reviewRating" precision={0.5} max={10}/>
+                                <Rating name="reviewRating" precision={1} max={10}/>
                             </Grid>
                             <Grid xs={12}>
                                 <TextField

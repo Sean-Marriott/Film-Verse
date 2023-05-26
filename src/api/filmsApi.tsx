@@ -9,14 +9,20 @@ export const getFilmsParametrised = async (searchTerm: string,
                                            filterAgeRatings: string[],
                                            sort: string,
                                            directorId: string,
-                                           reviewerId: string) => {
+                                           reviewerId: string,
+                                           startIndex: string,
+                                           count: string) => {
 
     let querySearch;
     let queryDirectorId;
     let queryReviewerId;
+    let queryStartIndex;
+    let queryCount;
     if (searchTerm !== "") {querySearch = searchTerm}
     if (directorId !== "") {queryDirectorId = directorId}
     if (reviewerId !== "") {queryReviewerId = reviewerId}
+    if (startIndex !== "") {queryStartIndex = startIndex}
+    if (count !== "") {queryCount = count}
 
 
     const response = await filmsApi.get("/", {params: {
@@ -25,7 +31,9 @@ export const getFilmsParametrised = async (searchTerm: string,
             ageRatings: filterAgeRatings,
             sortBy: sort,
             directorId: queryDirectorId,
-            reviewerId: queryReviewerId
+            reviewerId: queryReviewerId,
+            startIndex: queryStartIndex,
+            count: queryCount
         }})
     return response.data
 }

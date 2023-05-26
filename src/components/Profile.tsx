@@ -100,7 +100,7 @@ const Profile = () => {
     })
 
     const [directedFilmsAxiosError, setDirectedFilmsAxiosError] = useState("")
-    const { data: directedFilms, status: directedFilmsStatus} = useQuery('directedFilms', () => getFilmsParametrised("", [], [], "RELEASED_ASC", currentUserId.toString(), ""), {
+    const { data: directedFilms, status: directedFilmsStatus} = useQuery('directedFilms', () => getFilmsParametrised("", [], [], "RELEASED_ASC", currentUserId.toString(), "", "", ""), {
         select: (data) => data.films,
         onError: (error: AxiosError) => {
             if (error.response) {setDirectedFilmsAxiosError("Unable to get films by director: " + error.response.statusText)}
@@ -109,7 +109,7 @@ const Profile = () => {
     })
 
     const [reviewedFilmsAxiosError, setReviewedFilmsAxiosError] = useState("")
-    const { data: reviewedFilms, status: reviewedFilmsStatus} = useQuery('reviewedFilms', () => getFilmsParametrised("", [], [], "RELEASED_ASC", "", currentUserId.toString()), {
+    const { data: reviewedFilms, status: reviewedFilmsStatus} = useQuery('reviewedFilms', () => getFilmsParametrised("", [], [], "RELEASED_ASC", "", currentUserId.toString(), "", ""), {
         select: (data) => data.films,
         onError: (error: AxiosError) => {
             if (error.response) {setReviewedFilmsAxiosError("Unable to get films by reviewer: " + error.response.statusText)}
