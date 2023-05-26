@@ -38,6 +38,7 @@ const SimilarFilmObject = (props: ISimilarFilmObjectProps) => {
                     <Stack direction="row" alignItems="center">
                         <Chip icon={<StarRateIcon style={{ color: 'gold' }} />} label={film.rating} variant="outlined" />
                         <Chip variant="outlined" label={props.getGenre(film.genreId)}></Chip>
+                        <Chip variant="outlined" label={film.ageRating}></Chip>
                     </Stack>
                     <Chip variant="outlined" label={props.convertToDate(film.releaseDate)}></Chip>
                     <Chip

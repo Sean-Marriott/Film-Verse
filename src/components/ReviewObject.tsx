@@ -17,7 +17,7 @@ const ReviewObject = (props: IReviewObjectProps) => {
             <Paper elevation={6} >
                 <Grid xs={12}>
                     <Stack direction="row" alignItems="center" spacing={2}>
-                        <Avatar alt="Reviewer Profile Pic" src={"http://localhost:4941/api/v1/users/" + review.reviewerId +"/image"} />
+                        <Avatar alt={review.reviewerFirstName + "'s avatar"} src={"http://localhost:4941/api/v1/users/" + review.reviewerId +"/image"} />
                         <Typography variant="body1">{review.reviewerFirstName + " " + review.reviewerLastName}</Typography>
                         <Typography variant="subtitle2">{convertToDate(review.timestamp)}</Typography>
                     </Stack>
