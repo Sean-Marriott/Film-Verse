@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import Card from "@mui/material/Card";
 import {Avatar, CardActionArea, CardHeader} from "@mui/material";
 import CardMedia from "@mui/material/CardMedia";
@@ -14,6 +14,12 @@ interface IFilmListProps {
 }
 const FilmListObject = (props: IFilmListProps) => {
     const [film] = React.useState < Film > (props.film)
+    const [imageError, setImageError] = useState(false);
+    const defaultImage = "http://localhost:4941/api/v1/films/" + film.filmId  + "/image";
+    const handleImageError = () => {
+        console.log("Image Error: Resulting to default image")
+        setImageError(true);
+    };
     return (
         <Card sx={{ maxWidth: 345 }}>
             <CardHeader
@@ -23,7 +29,8 @@ const FilmListObject = (props: IFilmListProps) => {
                 <CardMedia
                     component="img"
                     height="140"
-                    src={"http://localhost:4941/api/v1/films/" + film.filmId +"/image"}
+                    src={imageError ? "defaultFilmImage.png" : defaultImage}
+                    onError={handleImageError}
                     alt="Film Hero Image"
                 />
                 <CardContent>

@@ -1,4 +1,4 @@
-import React from "react"
+import React, {useState} from "react"
 import Grid from "@mui/material/Unstable_Grid2";
 import CardMedia from "@mui/material/CardMedia";
 import Card from "@mui/material/Card";
@@ -14,6 +14,11 @@ interface ISimilarFilmObjectProps {
 }
 const SimilarFilmObject = (props: ISimilarFilmObjectProps) => {
     const [film] = React.useState(props.film)
+    const [imageError, setImageError] = useState(false);
+    const handleImageError = () => {
+        console.log("Image Error: Resulting to default image")
+        setImageError(true);
+    };
     return (
         <Grid>
             <Card sx={{ maxWidth: 200 }}>
@@ -21,7 +26,8 @@ const SimilarFilmObject = (props: ISimilarFilmObjectProps) => {
                 <CardMedia
                     component="img"
                     height="200"
-                    src={"http://localhost:4941/api/v1/films/" + film.filmId +"/image"}
+                    src={imageError ? "/defaultFilmImage.png" : "http://localhost:4941/api/v1/films/" + film.filmId + "/image"}
+                    onError={handleImageError}
                     alt="Film Hero Image"
                     sx={{ objectFit: "fill" }}
                 />

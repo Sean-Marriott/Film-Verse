@@ -34,6 +34,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import MenuItem from "@mui/material/MenuItem";
 import {MobileDateTimePicker} from "@mui/x-date-pickers";
 import dayjs, {Dayjs} from "dayjs";
+import Card from "@mui/material/Card";
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -79,6 +80,13 @@ const Film = () => {
 
     const [axiosError, setAxiosError] = useState("")
     const { id } = useParams<{ id: string }>();
+
+    const [imageError, setImageError] = useState(false);
+    const handleImageError = () => {
+        console.log("Image Error: Resulting to default image")
+        setImageError(true);
+    };
+
     const [tab, setTab] = React.useState(1);
     const [page, setPage] = useState(1);
     const similarFilmsPerPage = useWindowSize();
@@ -298,13 +306,16 @@ const Film = () => {
                 <Paper elevation={3}>
                     <Grid container >
                         <Grid sm={12} md={6} sx={{p:2}}>
-                            <CardMedia
-                                component="img"
-                                height="500"
-                                src={"http://localhost:4941/api/v1/films/" + film.filmId +"/image"}
-                                alt="Film Hero Image"
-                                sx={{ objectFit: "fill" }}
-                            />
+                            <Card>
+                                <CardMedia
+                                    component="img"
+                                    height="500"
+                                    src={imageError ? "/defaultFilmImage.png" : "http://localhost:4941/api/v1/films/" + id + "/image"}
+                                    onError={handleImageError}
+                                    alt="Film Hero Image"
+                                    sx={{ objectFit: "fill" }}
+                                />
+                            </Card>
                         </Grid>
                         <Grid container display="flex" direction="column" rowSpacing={2} sm={12} md={6} sx={{p:2}}>
                             <Grid xs={12} sx={{borderBottom:1}}>
