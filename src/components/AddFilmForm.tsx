@@ -230,7 +230,7 @@ const AddFilmForm = (props: IAddFilmForm) => {
                             <FormControl fullWidth>
                                 <MobileDateTimePicker
                                     disablePast
-                                    format='DD-MM-YYYY HH:mm'
+                                    format='DD-MM-YYYY HH:mm:ss'
                                     slotProps={{textField: {name: "releaseDate", id:"releaseDate"}}}
                                     label="Release Date"
                                     value={releaseDate}

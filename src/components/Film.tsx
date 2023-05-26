@@ -1,13 +1,13 @@
 import {AxiosError} from 'axios';
 import {useParams} from "react-router-dom";
-import React, {useState} from "react";
+import React, {ChangeEvent, useState} from "react";
 import {
     Alert,
     Avatar,
     Chip,
-    CircularProgress, Modal, Pagination,
+    CircularProgress, FormControl, FormHelperText, InputAdornment, InputLabel, Modal, OutlinedInput, Pagination,
     Paper,
-    Rating,
+    Rating, Select, SelectChangeEvent,
     Stack,
     Tab,
     Tabs,
@@ -19,7 +19,7 @@ import Box from "@mui/material/Box";
 import ReviewObject from "./ReviewObject";
 import SimilarFilmObject from"./SimilarFilmObject"
 import {useMutation, useQuery, useQueryClient} from "react-query";
-import {addReview, getFilm, getFilmsParametrised, getGenres, getReviews} from "../api/filmsApi";
+import {addReview, getFilm, getFilmsParametrised, getGenres, getReviews, updateFilm} from "../api/filmsApi";
 import AddCommentIcon from '@mui/icons-material/AddComment';
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
@@ -30,6 +30,10 @@ import TabPanel from "./TabPanel";
 import {useWindowSize} from "../hooks/useWindowSize"
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 import EditNoteIcon from "@mui/icons-material/EditNote";
+import EditIcon from "@mui/icons-material/Edit";
+import MenuItem from "@mui/material/MenuItem";
+import {MobileDateTimePicker} from "@mui/x-date-pickers";
+import dayjs, {Dayjs} from "dayjs";
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -44,18 +48,56 @@ const style = {
     p: 4,
 };
 
+interface FormData {
+    title: string,
+    description: string,
+    genre: string,
+    ageRating: string,
+    releaseDate: Dayjs,
+    runtime: string
+}
+
+const initialFormData: FormData = {
+    title: '',
+    description: '',
+    genre: '',
+    ageRating: '',
+    releaseDate: dayjs(),
+    runtime: ''
+}
+
 const Film = () => {
     const loggedInUserId = useUserStore(state => state.userId)
-    const loggedInUserToken= useUserStore(state => state.authToken)
     const queryClient = useQueryClient()
+
+    const [formData, setFormData] = useState<FormData>(initialFormData)
+    const [titleError, setTitleError] = useState(false)
+    const [descriptionError, setDescriptionError] = useState(false)
+    const [genreError, setGenreError] = useState(false)
+    const [ageRatingError, setAgeRatingError] = useState(false)
+    const [runtimeError, setRuntimeError] = useState(false)
+
     const [axiosError, setAxiosError] = useState("")
     const { id } = useParams<{ id: string }>();
     const [tab, setTab] = React.useState(1);
     const [page, setPage] = useState(1);
     const similarFilmsPerPage = useWindowSize();
     const [openReviewModal, setOpenReviewModal] = React.useState(false);
+    const [openEditModal, setOpenEditModal] = React.useState(false);
     const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
-    const { data: film, status: filmStatus, error: filmError  } = useQuery(['film', id], () => getFilm(id? id:"-1"))
+    const { data: film, status: filmStatus, error: filmError  } = useQuery(['film', id], () => getFilm(id? id:"-1"), {
+        onSuccess: (data) => {
+            const preExistingData: FormData = {
+                title: data.title,
+                description: data.description,
+                genre: data.genreId,
+                ageRating: data.ageRating,
+                releaseDate: dayjs(data.releaseDate),
+                runtime: data.runtime
+            }
+            setFormData(preExistingData)
+        }, enabled: !!genres
+    })
     const { data: reviews, status: reviewStatus, error: reviewError } = useQuery(['reviews', id], () => getReviews(id? id:"-1"))
     const { data: similarFilmGenreId, status: similarFilmGenreIdStatus, error:similarFilmGenreIdError } = useQuery(['similarFilmGenreId', id], () => getFilmsParametrised("", film.genreId, [], "RELEASED_ASC", "", ""), {
         select: (data) => data.films,
@@ -63,9 +105,6 @@ const Film = () => {
     const { data: similarFilmDirectorId, status: similarFilmDirectorIdStatus, error:similarFilmDirectorIdError } = useQuery(['similarFilmDirectorId', id], () => getFilmsParametrised("", [], [], "RELEASED_ASC", film.directorId, ""), {
         select: (data) => data.films,
         enabled: !!film})
-
-    console.log(loggedInUserId)
-    console.log(loggedInUserToken)
 
     const addReviewMutation  = useMutation(addReview, {
         onSuccess: () => {
@@ -77,6 +116,28 @@ const Film = () => {
             setAxiosError(error.response?.statusText || "Axios Error: Unknown")
         },
     })
+
+    const [updateFilmAxiosError, setUpdateFilmAxiosError] = useState("")
+    const updateFilmMutation  = useMutation(updateFilm, {
+        onSuccess: () => {
+            console.log("SUCCESS")
+            void queryClient.invalidateQueries({ queryKey: ['film'] })
+            setOpenEditModal(false)
+        },
+        onError: (error: AxiosError) => {
+            setUpdateFilmAxiosError(error.response?.statusText || "Axios Error: Unknown")
+        },
+    })
+
+    const ageRatings = [
+        "G",
+        "PG",
+        "M",
+        "R13",
+        "R16",
+        "R18",
+        "TBC"
+    ]
 
     if (genresStatus === "loading" || filmStatus === "loading" || reviewStatus === "loading" || similarFilmGenreIdStatus === "loading" || similarFilmDirectorIdStatus === "loading") {
         return <Grid container mt={8} justifyContent="center"><CircularProgress/></Grid>
@@ -129,6 +190,9 @@ const Film = () => {
     const handleOpenReviewModal = () => setOpenReviewModal(true);
     const handleCloseReviewModal = () => setOpenReviewModal(false);
 
+    const handleOpenEditModal = () => setOpenEditModal(true);
+    const handleCloseEditModal = () => setOpenEditModal(false);
+
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTab(newValue);
     };
@@ -166,6 +230,66 @@ const Film = () => {
         }
     }
 
+    const handleEditSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (validateData() && id) {
+            const formData = new FormData(event.currentTarget)
+            formData.set("filmId", id)
+            updateFilmMutation.mutate(formData)
+        }
+    }
+
+    const handleChange = (e: ChangeEvent<HTMLInputElement>):void => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        })
+    }
+
+    const handleChangeSelectBox = (event: SelectChangeEvent) => {
+        setFormData({
+            ...formData,
+            [event.target.name]: event.target.value
+        })
+    };
+
+    function validateData() {
+        let valid = true
+        setTitleError(false)
+        setDescriptionError(false)
+        setGenreError(false)
+        setAgeRatingError(false)
+        setRuntimeError(false)
+
+        const runtimeRegex = /^(\d+)$/;
+
+        if (formData.title === "") {
+            setTitleError(true)
+            valid = false
+        }
+
+        if (formData.description === "") {
+            setDescriptionError(true)
+            valid = false
+        }
+
+        if (formData.genre === "" || !genres.map((genre: Genre) => genre.genreId).includes(formData.genre)) {
+            setGenreError(true)
+            valid = false
+        }
+
+        if (!ageRatings.includes(formData.ageRating)) {
+            setAgeRatingError(true)
+            valid=false
+        }
+
+        if (!runtimeRegex.test(formData.runtime) || parseInt(formData.runtime) < 0) {
+            setRuntimeError(true)
+            valid=false
+        }
+
+        return valid
+    }
 
     return (
         <Grid container display="flex" justifyContent="center"  alignItems="center">
@@ -230,7 +354,7 @@ const Film = () => {
                                                 </Button>
                                             </Grid>
                                             <Grid>
-                                                <Button variant="outlined" endIcon={<EditNoteIcon />}>
+                                                <Button variant="outlined" endIcon={<EditNoteIcon />} onClick={handleOpenEditModal}>
                                                     Edit
                                                 </Button>
                                             </Grid>
@@ -299,6 +423,145 @@ const Film = () => {
                                 </Grid>
                             </Grid>
                         </Grid>}
+                    </Grid>
+                </Box>
+            </Modal>
+            <Modal
+                open={openEditModal}
+                onClose={handleCloseEditModal}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box component="form" onSubmit={handleEditSubmit} sx={style}>
+                    <Grid container spacing={2}>
+                        <Grid xs={12}>
+                            <Typography variant="h6">Edit Film: </Typography>
+                        </Grid>
+                        <Grid container>
+                            <Grid xs={12}>
+                                <TextField
+                                    id="title"
+                                    label="Title"
+                                    variant="outlined"
+                                    name="title"
+                                    fullWidth
+                                    required
+                                    error={titleError}
+                                    helperText={titleError ? "Please enter a title" : ""}
+                                    value={formData.title}
+                                    onChange={handleChange}
+                                />
+                            </Grid>
+                            <Grid xs={12}>
+                                <TextField
+                                    id="description"
+                                    label="Description"
+                                    variant="outlined"
+                                    name="description"
+                                    fullWidth
+                                    required
+                                    error={descriptionError}
+                                    helperText={descriptionError ? "Please enter a description" : ""}
+                                    value={formData.description}
+                                    onChange={handleChange}
+                                />
+                            </Grid>
+                            <Grid xs={6}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="genre-label">Genre *</InputLabel>
+                                    <Select
+                                        name="genre"
+                                        labelId="genre-label"
+                                        id="genre"
+                                        label="Genre *"
+                                        error={genreError}
+                                        value={formData.genre}
+                                        onChange={handleChangeSelectBox}
+                                    >
+                                        {genresStatus === "success" && genres.map((genre: Genre) => (
+                                            <MenuItem
+                                                key={genre.genreId}
+                                                value={genre.genreId}
+                                            >
+                                                {genre.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    {genreError && (
+                                        <FormHelperText error id="genre-error">
+                                            Please select a genre
+                                        </FormHelperText>
+                                    )}
+                                </FormControl>
+                            </Grid>
+                            <Grid xs={6}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="ageRating-label">Age Rating</InputLabel>
+                                    <Select
+                                        name="ageRating"
+                                        labelId="ageRating-label"
+                                        id="ageRating"
+                                        label="Age Rating"
+                                        error={ageRatingError}
+                                        value={formData.ageRating}
+                                        onChange={handleChangeSelectBox}
+                                    >
+                                            {ageRatings.map((ageRating) => (
+                                                <MenuItem
+                                                    key={ageRating}
+                                                    value={ageRating}
+                                                >
+                                                    {ageRating}
+                                                </MenuItem>
+                                            ))}
+                                    </Select>
+                                    {ageRatingError && (
+                                        <FormHelperText error id="ageRating-error">
+                                            Please select a valid age rating
+                                        </FormHelperText>
+                                    )}
+                                </FormControl>
+                            </Grid>
+                            <Grid xs={12} sm={6}>
+                                <FormControl fullWidth>
+                                    <MobileDateTimePicker
+                                        disablePast={!dayjs().isAfter(formData.releaseDate)}
+                                        disabled={dayjs().isAfter(formData.releaseDate)}
+                                        format='YYYY-MM-DD HH:mm:ss'
+                                        slotProps={{textField: {name: "releaseDate", id:"releaseDate"}}}
+                                        label="Release Date"
+                                        value={formData.releaseDate}
+                                    />
+                                </FormControl>
+                            </Grid>
+                            <Grid xs={12} sm={6}>
+                                <FormControl sx={{ width: '100%' }} variant="outlined">
+                                    <InputLabel htmlFor="outlined-adornment-runtime">Runtime</InputLabel>
+                                    <OutlinedInput
+                                        name="runtime"
+                                        id="outlined-adornment-runtime"
+                                        error={runtimeError}
+                                        value={formData.runtime}
+                                        onChange={handleChange}
+                                        endAdornment={
+                                            <InputAdornment position="end">
+                                                minutes
+                                            </InputAdornment>
+                                        }
+                                        label="Runtime"
+                                    />
+                                    {runtimeError && (
+                                        <FormHelperText error id="outlined-adornment-runtime-error">
+                                            Please enter a valid runtime in minutes
+                                        </FormHelperText>
+                                    )}
+                                </FormControl>
+                            </Grid>
+                        </Grid>
+                        <Grid xs={12} container justifyContent='flex-end'>
+                            {/*{editProfileAxiosError !== "" && <Alert sx={{mr: 3}} severity="error">{editProfileAxiosError}</Alert>}*/}
+                            <IconButton aria-label="edit" size="small" type="submit"><EditIcon color="secondary"/></IconButton>
+                        </Grid>
                     </Grid>
                 </Box>
             </Modal>

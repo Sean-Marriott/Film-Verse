@@ -78,8 +78,24 @@ export const addReview = async (formData: FormData) => {
 }
 
 
-export const updateFilm = async (film: Film) => {
-    return await filmsApi.patch('/${film.filmId}', film)
+export const updateFilm = async (formData: FormData) => {
+    const authtoken = localStorage.getItem('authToken')
+
+    const submitData = JSON.stringify({
+        title: formData.get('title'),
+        description: formData.get('description'),
+        // releaseDate: formData.get('releaseDate')? formData.get('releaseDate'):undefined,
+        releaseDate: "2026-04-23 18:25:43",
+        genreId: parseInt(formData.get('genre') as string),
+        runtime: formData.get('runtime')? parseInt(formData.get('runtime') as string):undefined,
+        ageRating: formData.get('ageRating')? formData.get('ageRating'):undefined
+    })
+
+    console.log(submitData)
+    console.log(formData.get("filmId"));
+    const response = await filmsApi.patch("/" + formData.get("filmId"), submitData, {headers: {'X-Authorization': authtoken, 'Content-Type': 'application/json'}})
+
+    return response.data
 }
 
 export const deleteFilm = async (filmId: number) => {
