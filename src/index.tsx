@@ -4,7 +4,6 @@ import { QueryClientProvider, QueryClient } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import './index.css';
 import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
-import NotFound from "./components/NotFound";
 import Film from "./components/Film";
 import Navbar from "./components/Navbar";
 import FilmList from "./components/FilmList";
@@ -51,7 +50,7 @@ root.render(
                         </Route>
                         <Route path="/films" element={<FilmList/>}/>
                         <Route path="/film/:id" element={<Film/>}/>
-                        <Route path="*" element={<NotFound/>}/>
+                        <Route path="*" element={<FilmList/>}/>
                     </Routes>
                 </div>
             </Router>
