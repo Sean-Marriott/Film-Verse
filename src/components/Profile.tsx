@@ -336,7 +336,7 @@ const Profile = () => {
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
-                <Box component="form" onSubmit={handleSubmit} sx={style}>
+                <Box component="form" onSubmit={handleSubmit} sx={style} noValidate>
                     <Grid container spacing={2}>
                         <Grid xs={12}>
                             <Typography variant="h6">Edit Profile: </Typography>
@@ -348,6 +348,7 @@ const Profile = () => {
                                     label="First Name"
                                     variant="outlined"
                                     name="firstName"
+                                    required
                                     error={firstNameError}
                                     helperText={firstNameError ? "Please enter a first name" : ""}
                                     value={formData.firstName}
@@ -360,6 +361,7 @@ const Profile = () => {
                                     label="Last Name"
                                     variant="outlined"
                                     name="lastName"
+                                    required
                                     error={lastNameError}
                                     helperText={lastNameError ? "Please enter a last name" : ""}
                                     value={formData.lastName}
@@ -373,6 +375,7 @@ const Profile = () => {
                                     label="Email"
                                     variant="outlined"
                                     name="email"
+                                    required
                                     error={emailError}
                                     helperText={emailError ? "Please enter a valid email" : ""}
                                     value={formData.email}
