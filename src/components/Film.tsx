@@ -1,5 +1,5 @@
 import {AxiosError} from 'axios';
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import React, {ChangeEvent, useState} from "react";
 import {
     Alert,
@@ -7,7 +7,7 @@ import {
     Chip,
     CircularProgress, FormControl, FormHelperText, InputAdornment, InputLabel, Modal, OutlinedInput, Pagination,
     Paper,
-    Rating, Select, SelectChangeEvent,
+    Rating, Select, SelectChangeEvent, Snackbar,
     Stack,
     Tab,
     Tabs,
@@ -19,7 +19,7 @@ import Box from "@mui/material/Box";
 import ReviewObject from "./ReviewObject";
 import SimilarFilmObject from"./SimilarFilmObject"
 import {useMutation, useQuery, useQueryClient} from "react-query";
-import {addReview, getFilm, getFilmsParametrised, getGenres, getReviews, updateFilm} from "../api/filmsApi";
+import {addReview, deleteFilm, getFilm, getFilmsParametrised, getGenres, getReviews, updateFilm} from "../api/filmsApi";
 import AddCommentIcon from '@mui/icons-material/AddComment';
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
@@ -35,6 +35,7 @@ import MenuItem from "@mui/material/MenuItem";
 import {MobileDateTimePicker} from "@mui/x-date-pickers";
 import dayjs, {Dayjs} from "dayjs";
 import Card from "@mui/material/Card";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -68,7 +69,9 @@ const initialFormData: FormData = {
 }
 
 const Film = () => {
+    const navigate = useNavigate()
     const loggedInUserId = useUserStore(state => state.userId)
+    const currentAuthToken = useUserStore(state => state.authToken)
     const queryClient = useQueryClient()
 
     const [formData, setFormData] = useState<FormData>(initialFormData)
@@ -90,6 +93,7 @@ const Film = () => {
     const [tab, setTab] = React.useState(1);
     const [page, setPage] = useState(1);
     const similarFilmsPerPage = useWindowSize();
+    const [openDeleteModal, setOpenDeleteModal] = useState(false)
     const [openReviewModal, setOpenReviewModal] = React.useState(false);
     const [openEditModal, setOpenEditModal] = React.useState(false);
     const { data: genres, status: genresStatus, error: genresError } = useQuery('genres', getGenres)
@@ -128,7 +132,6 @@ const Film = () => {
     const [updateFilmAxiosError, setUpdateFilmAxiosError] = useState("")
     const updateFilmMutation  = useMutation(updateFilm, {
         onSuccess: () => {
-            console.log("SUCCESS")
             void queryClient.invalidateQueries({ queryKey: ['film'] })
             setOpenEditModal(false)
         },
@@ -136,6 +139,21 @@ const Film = () => {
             setUpdateFilmAxiosError(error.response?.statusText || "Axios Error: Unknown")
         },
     })
+
+    const [openDeleteSnackbar, setOpenDeleteSnackbar] = React.useState(false)
+    const [deleteFilmAxiosError, setDeleteFilmAxiosError] = useState("")
+    const { refetch } = useQuery ('delete', () => deleteFilm(parseInt(id as string), currentAuthToken), {enabled: false,
+        onSuccess: () => {
+            handleCloseDeleteModal()
+            void queryClient.invalidateQueries({ queryKey: ['films'] })
+            setOpenDeleteSnackbar(true)
+            setTimeout(()=> {
+                navigate('/films')
+            }, 1000);
+        },
+        onError: (error: AxiosError) => {
+            setDeleteFilmAxiosError("Unable to delete film: " + error.response?.statusText)
+        }})
 
     const ageRatings = [
         "G",
@@ -200,6 +218,11 @@ const Film = () => {
 
     const handleOpenEditModal = () => setOpenEditModal(true);
     const handleCloseEditModal = () => setOpenEditModal(false);
+
+    const handleOpenDeleteModal = () => setOpenDeleteModal(true)
+    const handleCloseDeleteModal = () => setOpenDeleteModal(false)
+
+    const handleCloseDeleteSnackbar = () => { setOpenDeleteSnackbar(false) };
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTab(newValue);
@@ -300,6 +323,10 @@ const Film = () => {
         return valid
     }
 
+    const handleDelete = () => {
+        void refetch()
+    }
+
     return (
         <Grid container display="flex" justifyContent="center"  alignItems="center">
             <Grid xs={12} sx={{m:6, ml:10, mr:10}}>
@@ -359,7 +386,12 @@ const Film = () => {
                                         </Grid>
                                     </Grid>
                                     {loggedInUserId === film.directorId &&
-                                        <Grid container spacing={2} xs={12} mt={12} justifyContent="end">
+                                        <Grid container spacing={2} xs={12} mt={12} justifyContent="center">
+                                            <Grid>
+                                                <Button variant="outlined" startIcon={<DeleteIcon />} onClick={handleOpenDeleteModal}>
+                                                    Delete
+                                                </Button>
+                                            </Grid>
                                             <Grid>
                                                 <Button variant="outlined" endIcon={<AddAPhotoIcon />} href={"/updateFilmImage/" + id}>
                                                     Update Hero Image
@@ -518,14 +550,14 @@ const Film = () => {
                                         value={formData.ageRating}
                                         onChange={handleChangeSelectBox}
                                     >
-                                            {ageRatings.map((ageRating) => (
-                                                <MenuItem
-                                                    key={ageRating}
-                                                    value={ageRating}
-                                                >
-                                                    {ageRating}
-                                                </MenuItem>
-                                            ))}
+                                        {ageRatings.map((ageRating) => (
+                                            <MenuItem
+                                                key={ageRating}
+                                                value={ageRating}
+                                            >
+                                                {ageRating}
+                                            </MenuItem>
+                                        ))}
                                     </Select>
                                     {ageRatingError && (
                                         <FormHelperText error id="ageRating-error">
@@ -577,6 +609,39 @@ const Film = () => {
                     </Grid>
                 </Box>
             </Modal>
+            <Modal
+                open={openDeleteModal}
+                onClose={handleCloseDeleteModal}
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
+            >
+                <Box sx={style}>
+                    <Grid container spacing={2}>
+                        <Grid xs={12}>
+                            <Typography variant="h5">Confirmation</Typography>
+                        </Grid>
+                        <Grid xs={12}>
+                            <Typography variant="subtitle1">Are you sure you want to delete this film? This action is irreversible.</Typography>
+                        </Grid>
+                        <Grid container xs={12} spacing={2} justifyContent="end">
+                            <Grid>
+                                <Button variant="contained" color="error" onClick={handleDelete}>Delete</Button>
+                            </Grid>
+                            <Grid>
+                                <Button variant="outlined" onClick={handleCloseDeleteModal}>Cancel</Button>
+                            </Grid>
+                        </Grid>
+                        <Grid xs={12} container justifyContent='flex-end'>
+                            {deleteFilmAxiosError !== "" && <Alert sx={{mr: 3}} severity="error">{deleteFilmAxiosError}</Alert>}
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Modal>
+            <Snackbar open={openDeleteSnackbar} autoHideDuration={6000} onClose={handleCloseDeleteSnackbar} anchorOrigin={{ vertical:"bottom", horizontal:"left" }}>
+                <Alert onClose={handleCloseDeleteSnackbar} severity="success" sx={{ width: '100%' }}>
+                    Film successfully deleted
+                </Alert>
+            </Snackbar>
         </Grid>
     )
 

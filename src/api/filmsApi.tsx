@@ -98,8 +98,8 @@ export const updateFilm = async (formData: FormData) => {
     return response.data
 }
 
-export const deleteFilm = async (filmId: number) => {
-    return await filmsApi.delete('/${film.filmId}')
+export const deleteFilm = async (filmId: number, authToken: string) => {
+    return await filmsApi.delete('/'+filmId, {headers: {'X-Authorization': authToken}})
 }
 
 interface IUploadFilm {
