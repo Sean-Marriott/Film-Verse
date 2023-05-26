@@ -2,7 +2,7 @@ import Button from "@mui/material/Button";
 import * as React from "react";
 import {ChangeEvent, useState} from "react";
 import {useMutation} from "react-query";
-import {uploadProfilePic} from "../api/usersApi";
+import {removeProfilePicture, uploadProfilePic} from "../api/usersApi";
 import {AxiosError} from "axios";
 import {Alert, Avatar, Snackbar, Stack} from "@mui/material";
 import {useUserStore} from "../store";
@@ -25,12 +25,23 @@ const AddPicture = () => {
             navigate("/profile")
         },
         onError: (error: AxiosError) => {
-            console.log(error)
             if (error.response) {setImageUploadAxiosError("Unable to upload image: " + error.response.statusText)}
             else {setImageUploadAxiosError("Unable to upload image: " + error.message)}
             setOpenErrorSnackbar(true)
         }
     })
+
+    const deleteProfileImageMutation = useMutation(removeProfilePicture, {
+        onSuccess: () => {
+            navigate("/profile")
+        },
+        onError: (error: AxiosError) => {
+            if (error.response) {setImageUploadAxiosError("Unable to remove image: " + error.response.statusText)}
+            else {setImageUploadAxiosError("Unable to remove image: " + error.message)}
+            setOpenErrorSnackbar(true)
+        }
+    })
+
     const handleProfileImageChange = (event: ChangeEvent<HTMLInputElement>) => {
         console.log(event.target.files)
         if (event.target.files && event.target.files.length > 0) {
@@ -39,6 +50,10 @@ const AddPicture = () => {
                 uploadProfilePicMutation.mutate(event.target.files[0])
             }
         }
+    }
+
+    const handleDeleteProfilePicture = () => {
+        deleteProfileImageMutation.mutate();
     }
 
     const handleCloseErrorSnackbar = () => {
@@ -69,6 +84,9 @@ const AddPicture = () => {
                     onChange={handleProfileImageChange}
                     hidden
                 />
+            </Button>
+            <Button onClick={handleDeleteProfilePicture}>
+                Delete Profile Picture
             </Button>
         </Stack>
     )

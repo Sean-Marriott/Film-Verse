@@ -61,3 +61,12 @@ export const editProfile = async (formData: FormData) => {
         return response.data
     }
 }
+
+export const removeProfilePicture = async () => {
+    let userId = localStorage.getItem("userId")
+    let loggedInUserToken = localStorage.getItem("authToken")
+    if (loggedInUserToken !== "") {
+        const response = await usersApi.delete("/" + userId + "/image", {headers: {'X-Authorization': loggedInUserToken}}  )
+        return response.data
+    }
+}
