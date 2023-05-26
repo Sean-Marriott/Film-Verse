@@ -93,7 +93,7 @@ const Film = () => {
                 genre: data.genreId,
                 ageRating: data.ageRating,
                 releaseDate: dayjs(data.releaseDate),
-                runtime: data.runtime
+                runtime: data.runtime||""
             }
             setFormData(preExistingData)
         }, enabled: !!genres
@@ -232,6 +232,7 @@ const Film = () => {
 
     const handleEditSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setUpdateFilmAxiosError("")
         if (validateData() && id) {
             const formData = new FormData(event.currentTarget)
             formData.set("filmId", id)
@@ -283,7 +284,7 @@ const Film = () => {
             valid=false
         }
 
-        if (!runtimeRegex.test(formData.runtime) || parseInt(formData.runtime) < 0) {
+        if (formData.runtime !== "" && (!runtimeRegex.test(formData.runtime) || parseInt(formData.runtime) < 0 || parseInt(formData.runtime) > 300)) {
             setRuntimeError(true)
             valid=false
         }
@@ -552,14 +553,14 @@ const Film = () => {
                                     />
                                     {runtimeError && (
                                         <FormHelperText error id="outlined-adornment-runtime-error">
-                                            Please enter a valid runtime in minutes
+                                            Please enter a valid runtime in minutes (no more than 300 minutes)
                                         </FormHelperText>
                                     )}
                                 </FormControl>
                             </Grid>
                         </Grid>
                         <Grid xs={12} container justifyContent='flex-end'>
-                            {/*{editProfileAxiosError !== "" && <Alert sx={{mr: 3}} severity="error">{editProfileAxiosError}</Alert>}*/}
+                            {updateFilmAxiosError !== "" && <Alert sx={{mr: 3}} severity="error">{updateFilmAxiosError}</Alert>}
                             <IconButton aria-label="edit" size="small" type="submit"><EditIcon color="secondary"/></IconButton>
                         </Grid>
                     </Grid>

@@ -23,7 +23,13 @@ const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
 );
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false
+        }
+    }
+})
 
 root.render(
     <div className="App">
