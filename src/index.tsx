@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClientProvider, QueryClient } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
 import './index.css';
 import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
 import Film from "./components/Film";
@@ -54,7 +53,6 @@ root.render(
                     </Routes>
                 </div>
             </Router>
-            <ReactQueryDevtools />
             </LocalizationProvider>
         </QueryClientProvider>
     </div>
